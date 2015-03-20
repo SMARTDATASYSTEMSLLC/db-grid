@@ -1,0 +1,33 @@
+{
+  "name": "db-grid",
+  "version": "1.0.1",
+  "homepage": "https://github.com/SMARTDATASYSTEMSLLC/sds-angular-controls",
+  "authors": [
+    "Steve Gentile <steven.gentile@gmail.com>",
+    "David Benson  <davidbenson86@gmail.com>"
+  ],
+  "description": "Angular Directives used with sds-angular generator",
+  "license": "MIT",
+  "main": [
+    "dist/sds-angular-controls.js",
+    "dist/sds-angular-controls.css"
+  ],
+  "keywords": [
+    "angular",
+    "directives"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": ">=1.3 <2.0",
+    "lodash": ">=2",
+    "jquery": "~2",
+    "moment": "~2"
+  }
+}
