@@ -1,2 +1,10 @@
-# db-grid
-A lightweight Angular JS grid control supporting pagination, sorting, and filtering.
+db-grid
+====================
+
+SDS Angular grid
+
+To Install this package:
+
+    bower install db-grid --save
+
+
