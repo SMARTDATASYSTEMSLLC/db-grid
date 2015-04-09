@@ -2,8 +2,8 @@
 (function () {
     'use strict';
 
-    // For internal use only. Manually binds a template using a provided template function, with a fallback to $compile.
-    // Needs to be extremely lightweight.
+    // For internal use. Manually binds a template using a provided template function, with a fallback to $compile.
+    // Needs to be lightweight.
 
     function dbBindCell ($compile) {
         return{
@@ -12,7 +12,8 @@
                 if (typeof $scope._col.template === 'function'){
                     $element.append($scope._col.template($scope));
 
-                }else if(!angular.element.trim($element.html())){
+                }else if(!$element.html().trim()){
+                    // template must be wrapped in a single tag
                     var html = angular.element('<span>' + $scope._col.template  + '</span>');
                     var compiled = $compile(html) ;
                     $element.append(html);
@@ -24,21 +25,9 @@
                   $element.addClass($scope._col.layoutCss);
                 }
             }
-        }
+        };
     }
 
-    function dbTransclude (){
-        return {
-            restrict: 'EAC',
-            link: function($scope, $element, $attrs, controller, $transclude) {
-                $transclude(function(clone, scope) {
-                    $element.empty();
-                    scope.$grid = $scope.$grid;
-                    $element.append(clone);
-                });
-            }
-        }
-    }
 
-    angular.module('sds-angular-controls').directive('dbBindCell', dbBindCell).directive('dbTransclude', dbTransclude)
+    angular.module('db-grid').directive('dbBindCell', dbBindCell);
 })();

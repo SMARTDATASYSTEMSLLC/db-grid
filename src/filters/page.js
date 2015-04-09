@@ -16,5 +16,5 @@
         };
     }
 
-    angular.module('sds-angular-controls').filter('page', page);
+    angular.module('db-grid').filter('page', page);
 })();

@@ -1,6 +1,3 @@
-/**
- * Created by stevegentile on 12/17/14.
- */
 (function (){
   'use strict';
 
@@ -12,5 +9,5 @@
     };
   }
 
-  angular.module('sds-angular-controls').filter('camelCase', camelCase);
+  angular.module('db-grid').filter('camelCase', camelCase);
 })();

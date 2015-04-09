@@ -21,15 +21,15 @@
             replace: true,
             transclude:true,
             scope:true,
-            templateUrl: 'sds-angular-controls/table-directives/db-grid.html',
+            templateUrl: 'db-grid/table-directives/db-grid.html',
             compile: function (tElement, tAttrs){
                 var loop = tAttrs.for.split(' ');
-                if (loop.length !== 1 && loop[1] != 'in') {
+                if (loop.length !== 1 && loop[1] !== 'in') {
                     $log.error('Invalid loop');
                     return;
                 }
 
-                tElement.find('tbody > tr').attr('ng-repeat', loop[0] + ' in _model.filteredItems');
+                tElement.find('tbody').children().attr('ng-repeat', loop[0] + ' in _model.filteredItems');
             },
             controller: function ($scope, $element, $attrs){
                 var complexFilter = $filter('complexFilter');
@@ -55,7 +55,6 @@
                     getItems: defaultGetItems,
                     toggleSort: toggleSort,
                     clearFilters: clearFilters,
-                    onEnter: onEnter,
                     refresh: _.debounce(refresh, 100),
                     waiting: false
                 };
@@ -105,22 +104,14 @@
                     $scope._model.refresh();
                 }
 
-                function onEnter(){
-                    if ($scope._model.items.length === 1){
-                        $timeout(function (){
-                            $element.find('tbody tr a:first').click();
-                        });
-                    }
-                }
-
                 function getTooltip(col){
                     if (col.title){
                         return col.title;
                     }
                     if (col.type === 'bool'){
-                        return 'Filter using yes, no, true, or false'
+                        return 'Filter using yes, no, true, or false';
                     }else if (col.type){
-                        return 'Use a dash (-) to specify a range'
+                        return 'Use a dash (-) to specify a range';
                     }
                 }
 
@@ -198,7 +189,7 @@
 
                 if($attrs.query !== undefined){
                     $attrs.$observe('query', function (val, old){
-                        if(val != old){
+                        if(val !== old){
                             if (_.isString(val)){
                                 $scope._model.filterText = val;
                             }
@@ -216,5 +207,5 @@
         };
     }
 
-    angular.module('sds-angular-controls').directive('dbGrid', dbGrid);
+    angular.module('db-grid').directive('dbGrid', dbGrid);
 })();

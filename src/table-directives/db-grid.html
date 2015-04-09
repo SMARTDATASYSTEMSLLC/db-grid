@@ -6,7 +6,7 @@
         <div ng-if="!_model.showAdvancedFilter && _model.filterType !== 'none'" class="toolbar-input">
             <div class="form-group has-feedback">
                 <input class="form-control" type="text" ng-model="_model.filterText" ng-keyup="$grid.refresh()"
-                       placeholder="Filter {{_model.label || 'items'}}" on-enter="_model.onEnter()" isolate-control />
+                       placeholder="Filter {{_model.label || 'items'}}" isolate-control />
                 <a href="" ng-click="_model.filterText = ''; $grid.refresh()" class="form-control-feedback feedback-link">&times;</a>
             </div>
         </div>

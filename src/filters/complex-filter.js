@@ -1,12 +1,3 @@
-/*
-    This filter will take an object of filters to reduce from:
-    {
-        columnName1: "value"
-        ColumnName2: 11
-        ColumnName3: [rangeStart, rangeEnd],
-        all: "general filter"
-    }
- */
 (function (){
     'use strict';
 
@@ -28,9 +19,9 @@
                 _.each(arg, function (col) {
                     if (col.type === 'date' && col.filter) {
                         var d = col.filter.split("-");
-                        var d1 = moment(d[0]);
-                        var d2 = moment(d[1] || d1.clone().endOf('day'));
-                        if (d1.isValid() && d2.isValid()) {
+                        var d1 = new Date(d[0]);
+                        var d2 = new Date(d[1] || (d1.valueOf()+86400000));
+                        if (!isNaN(d1) && !isNaN(d2)) {
                             filters.push({
                                 filter: [d1.valueOf(), d2.valueOf()],
                                 key: col.key,
@@ -97,12 +88,12 @@
                         } else if (!col.type) {
                             return (prop(item,col.key) + "").toLowerCase().indexOf(col.filter) > -1;
                         } else if (col.type === 'date') {
-                            var d = moment(prop(item,col.key)).valueOf();
+                            var d = (new Date(prop(item,col.key))).valueOf();
                             return d >= col.filter[0] && d <= col.filter[1];
                         } else if (col.type === 'number') {
                             return prop(item,col.key) >= col.filter[0] && prop(item,col.key) <= col.filter[1];
                         }else if (col.type === 'bool') {
-                            return !!prop(item,col.key) === col.filter;
+                            return col.filter ? prop(item,col.key) : !prop(item,col.key);
                         }
                     });
                 });
@@ -112,5 +103,5 @@
         };
     }
 
-    angular.module('sds-angular-controls').filter('complexFilter', complexFilter);
+    angular.module('db-grid').filter('complexFilter', complexFilter);
 })();

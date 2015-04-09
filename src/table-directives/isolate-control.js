@@ -1,4 +1,7 @@
 (function () {
+    "use strict";
+
+    // Removes the control from the parent angular form.
 
     function isolateControl() {
         return {
@@ -35,5 +38,5 @@
         };
     }
 
-    angular.module('sds-angular-controls').directive('isolateControl', isolateControl);
+    angular.module('db-grid').directive('isolateControl', isolateControl);
 })();

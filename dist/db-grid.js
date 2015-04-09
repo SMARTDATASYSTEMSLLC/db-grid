@@ -20,7 +20,7 @@ angular.module('db-grid', []);
     };
   }
 
-  angular.module('sds-angular-controls').filter('camelCase', camelCase);
+  angular.module('db-grid').filter('camelCase', camelCase);
 })();
 
 (function (){
@@ -44,9 +44,9 @@ angular.module('db-grid', []);
                 _.each(arg, function (col) {
                     if (col.type === 'date' && col.filter) {
                         var d = col.filter.split("-");
-                        var d1 = moment(d[0]);
-                        var d2 = moment(d[1] || d1.clone().endOf('day'));
-                        if (d1.isValid() && d2.isValid()) {
+                        var d1 = new Date(d[0]);
+                        var d2 = new Date(d[1] || (d1.valueOf()+86400000));
+                        if (!isNaN(d1) && !isNaN(d2)) {
                             filters.push({
                                 filter: [d1.valueOf(), d2.valueOf()],
                                 key: col.key,
@@ -118,7 +118,7 @@ angular.module('db-grid', []);
                         } else if (col.type === 'number') {
                             return prop(item,col.key) >= col.filter[0] && prop(item,col.key) <= col.filter[1];
                         }else if (col.type === 'bool') {
-                            return !!prop(item,col.key) === col.filter;
+                            return col.filter ? prop(item,col.key) : !prop(item,col.key);
                         }
                     });
                 });
@@ -129,7 +129,7 @@ angular.module('db-grid', []);
     }
     complexFilter.$inject = ["$filter"];
 
-    angular.module('sds-angular-controls').filter('complexFilter', complexFilter);
+    angular.module('db-grid').filter('complexFilter', complexFilter);
 })();
 
 (function (){
@@ -146,7 +146,7 @@ angular.module('db-grid', []);
     };
   }
 
-  angular.module('sds-angular-controls').filter('labelCase', labelCase);
+  angular.module('db-grid').filter('labelCase', labelCase);
 })();
 
 (function (){
@@ -167,233 +167,15 @@ angular.module('db-grid', []);
         };
     }
 
-    angular.module('sds-angular-controls').filter('page', page);
+    angular.module('db-grid').filter('page', page);
 })();
 
 
 (function () {
     'use strict';
 
-    /*
-        An example server side api handler
-     */
-
-    function dbApiVelocity ($http, $rootScope) {
-        return{
-            restrict: 'E',
-            require: '^dbGrid',
-            scope:{
-                api: '@',
-                postParams: '='
-            },
-            link: function (scope, element, attr, dbGrid) {
-
-                if (attr.postParams){
-                    scope.$watch('postParams', function (val){
-                        if(val) {
-                            dbGrid.refresh(true);
-                        }
-                    });
-                }
-
-                function capitalize (str){
-                    return str.charAt(0).toUpperCase() + str.slice(1);
-                }
-
-                function isNumeric (obj){
-                   return (obj - parseFloat( obj ) + 1) >= 0;
-                }
-
-                function getData(filter, sortKey, sortAsc, currentPage, pageSize, cols){
-                    var query = {
-                        page: currentPage+1,
-                        pageSize: pageSize,
-                        sort: [],
-                        filter: createFilters(filter, cols)
-                    };
-                    if (sortKey !== null){
-                        query.sort.push({
-                            field: capitalize(sortKey),
-                            direction: sortAsc ? '' : 'desc'
-                        });
-                    }
-                    _.merge(query, scope.postParams, function(a, b) {
-                        if (_.isArray(a)) {
-                            return a.concat(b);
-                        }
-                    });
-
-                    $rootScope.$broadcast('db-api:start', query);
-                    dbGrid.setWaiting(true);
-                    return $http.post(scope.api, query).then(function (response) {
-                        $rootScope.$broadcast('db-api:complete', response.data);
-                        dbGrid.setTotal(response.data.total);
-                        dbGrid.setWaiting(false);
-                        return response.data.tableData;
-                    }, function (){
-                        dbGrid.setWaiting(false);
-                        $rootScope.$broadcast('db-api:complete');
-                    });
-                }
-
-                function createFilters (filter, cols){
-                    var result = {filters: []};
-                    var dateRangeRegex = /^(\s*(\d+[-/]){2}[^-]*)-(\s*(\d+[-/]){2}[^-]*)$/;
-                    var dateRegex = /^(\s*(\d+[-/]){2}[^-]*)$/;
-
-                    if (typeof filter === 'object'){
-                        var n;
-                        result.logic = 'and';
-                        result.filters = _.reduce(cols, function (r, item){
-                            if (item.key && item.filter && item.type === 'number' && item.filter[0] === '-'){
-                                n = item.filter.slice(1);
-                                if (isNumeric(n)) {
-                                    r.push({
-                                        fieldType: 'decimal',
-                                        fieldOperator: 'lt',
-                                        fieldValue: parseFloat(n),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-
-                            }else if (item.key && item.filter && item.type === 'date' && item.filter[0] === '-'){
-                                n = item.filter.slice(1);
-                                if (dateRegex.test(n) && moment(n).isValid()) {
-                                    r.push({
-                                        fieldType: 'datetime',
-                                        fieldOperator: 'lt',
-                                        fieldValue: moment(n).utcOffset(0).format('MM/DD/YYYY HH:mm a'),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-                            }else if (item.key && item.filter && item.type === 'number' && item.filter.indexOf('-') > 0){
-                                n = item.filter.split('-');
-                                if(!n[0] && n[1]){
-                                    n.slice(0,1);
-                                    n[0] *= -1;
-                                }
-                                if(!n[1] && n[2]){
-                                    n.slice(1,1);
-                                    n[1] *= -1;
-                                }
-                                if (isNumeric(n[0]) && isNumeric(n[1])) {
-                                    r.push({
-                                        fieldType: 'decimal',
-                                        fieldOperator: 'gte',
-                                        fieldValue: parseFloat(n[0]),
-                                        field: capitalize(item.key)
-                                    });
-                                    r.push({
-                                        fieldType: 'decimal',
-                                        fieldOperator: 'lte',
-                                        fieldValue: parseFloat(n[1]),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-
-                            }else if (item.key && item.filter && item.type === 'date' && dateRangeRegex.test(item.filter)){
-                                n = dateRangeRegex.exec(item.filter);
-
-                                if (moment(n[1]).isValid() && moment(n[3]).isValid()) {
-                                    r.push({
-                                        fieldType: 'datetime',
-                                        fieldOperator: 'gte',
-                                        fieldValue: moment(n[1]).utcOffset(0).format('MM/DD/YYYY HH:mm a'),
-                                        field: capitalize(item.key)
-                                    });
-                                    r.push({
-                                        fieldType: 'datetime',
-                                        fieldOperator: 'lte',
-                                        fieldValue: moment(n[3]).utcOffset(0).format('MM/DD/YYYY HH:mm a'),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-                            }else if (item.key && item.filter && item.type === 'number'){
-                                if (isNumeric(item.filter)) {
-                                    r.push({
-                                        fieldType: 'decimal',
-                                        fieldOperator: 'eq',
-                                        fieldValue: parseFloat(item.filter),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-                            }else if (item.key && item.filter && item.type === 'date'){
-                                if (moment(item.filter).isValid()) {
-                                    r.push({
-                                        fieldType: 'datetime',
-                                        fieldOperator: 'gte',
-                                        fieldValue: moment(item.filter).startOf('day').utcOffset(0).format('MM/DD/YYYY HH:mm a'),
-                                        field: capitalize(item.key)
-                                    });
-                                    r.push({
-                                        fieldType: 'datetime',
-                                        fieldOperator: 'lte',
-                                        fieldValue: moment(item.filter).endOf('day').utcOffset(0).format('MM/DD/YYYY HH:mm a'),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-                            }else if (item.key && item.filter){
-                                r.push({
-                                    fieldType:'string',
-                                    fieldOperator:'contains',
-                                    fieldValue: item.filter,
-                                    field: capitalize(item.key)
-                                });
-                            }
-
-                            return r;
-                        }, []);
-                    }else if (typeof filter === 'string' && filter){
-                        result.logic = 'or';
-                        result.filters = _.reduce(cols, function (r, item){
-                            if (item.key && item.sortable && item.type === 'number'){
-                                if (isNumeric(filter)) {
-                                    r.push({
-                                        fieldType: 'decimal',
-                                        fieldOperator: 'eq',
-                                        fieldValue: parseFloat(filter),
-                                        field: capitalize(item.key)
-                                    });
-                                }
-                            }else if (item.key && item.sortable && item.type === 'date'){
-                                if (dateRegex.test(filter) && moment(filter).isValid()) {
-                                    r.push({
-                                        fieldType: 'date',
-                                        fieldOperator: 'eq',
-                                        fieldValue: filter,
-                                        field: capitalize(item.key)
-                                    });
-                                }
-                            }else if (item.key && item.sortable){
-                                r.push({
-                                    fieldType:'string',
-                                    fieldOperator:'contains',
-                                    fieldValue: filter,
-                                    field: capitalize(item.key)
-                                });
-                            }
-                            return r;
-                        }, []);
-                    }
-                    return result;
-                }
-
-                dbGrid.setDataSource(getData);
-            }
-
-        }
-    }
-    dbApiVelocity.$inject = ["$http", "$rootScope"];
-
-    angular.module('sds-angular-controls').directive('dbApiVelocity', dbApiVelocity);
-})();
-
-
-(function () {
-    'use strict';
-
-    // For internal use only. Manually binds a template using a provided template function, with a fallback to $compile.
-    // Needs to be extremely lightweight.
+    // For internal use. Manually binds a template using a provided template function, with a fallback to $compile.
+    // Needs to be lightweight.
 
     function dbBindCell ($compile) {
         return{
@@ -402,7 +184,8 @@ angular.module('db-grid', []);
                 if (typeof $scope._col.template === 'function'){
                     $element.append($scope._col.template($scope));
 
-                }else if(!angular.element.trim($element.html())){
+                }else if(!$element.html().trim()){
+                    // template must be wrapped in a single tag
                     var html = angular.element('<span>' + $scope._col.template  + '</span>');
                     var compiled = $compile(html) ;
                     $element.append(html);
@@ -414,24 +197,12 @@ angular.module('db-grid', []);
                   $element.addClass($scope._col.layoutCss);
                 }
             }
-        }
+        };
     }
     dbBindCell.$inject = ["$compile"];
 
-    function dbTransclude (){
-        return {
-            restrict: 'EAC',
-            link: function($scope, $element, $attrs, controller, $transclude) {
-                $transclude(function(clone, scope) {
-                    $element.empty();
-                    scope.$grid = $scope.$grid;
-                    $element.append(clone);
-                });
-            }
-        }
-    }
 
-    angular.module('sds-angular-controls').directive('dbBindCell', dbBindCell).directive('dbTransclude', dbTransclude)
+    angular.module('db-grid').directive('dbBindCell', dbBindCell);
 })();
 
 
@@ -464,7 +235,7 @@ angular.module('db-grid', []);
                     var templateFunc = null;
 
                     if (!templateText && $attrs.key){
-                        templateText = '{{' + dbGrid.rowName + '.' + $attrs.key + '}}'
+                        templateText = '{{' + dbGrid.rowName + '.' + $attrs.key + '}}';
                     }
                     if ($attrs.bind === 'true'){
                         templateFunc = templateText;
@@ -490,7 +261,7 @@ angular.module('db-grid', []);
 
                     if($attrs.query !== undefined){
                         $attrs.$observe('query', function (val, old){
-                           if(val != old){
+                           if(val !== old){
                                column.filter = val;
                                dbGrid.refresh();
                            }
@@ -500,13 +271,13 @@ angular.module('db-grid', []);
                     $scope.$on('$destroy', function() {
                         dbGrid.removeColumn(column);
                     });
-                }
+                };
             }
-        }
+        };
     }
     dbCol.$inject = ["$interpolate"];
 
-    angular.module('sds-angular-controls').directive('dbCol', dbCol);
+    angular.module('db-grid').directive('dbCol', dbCol);
 })();
 
 (function () {
@@ -532,15 +303,15 @@ angular.module('db-grid', []);
             replace: true,
             transclude:true,
             scope:true,
-            templateUrl: 'sds-angular-controls/table-directives/db-grid.html',
+            templateUrl: 'db-grid/table-directives/db-grid.html',
             compile: function (tElement, tAttrs){
                 var loop = tAttrs.for.split(' ');
-                if (loop.length !== 1 && loop[1] != 'in') {
+                if (loop.length !== 1 && loop[1] !== 'in') {
                     $log.error('Invalid loop');
                     return;
                 }
 
-                tElement.find('tbody > tr').attr('ng-repeat', loop[0] + ' in _model.filteredItems');
+                tElement.find('tbody').children().attr('ng-repeat', loop[0] + ' in _model.filteredItems');
             },
             controller: ["$scope", "$element", "$attrs", function ($scope, $element, $attrs){
                 var complexFilter = $filter('complexFilter');
@@ -566,7 +337,6 @@ angular.module('db-grid', []);
                     getItems: defaultGetItems,
                     toggleSort: toggleSort,
                     clearFilters: clearFilters,
-                    onEnter: onEnter,
                     refresh: _.debounce(refresh, 100),
                     waiting: false
                 };
@@ -616,22 +386,14 @@ angular.module('db-grid', []);
                     $scope._model.refresh();
                 }
 
-                function onEnter(){
-                    if ($scope._model.items.length === 1){
-                        $timeout(function (){
-                            $element.find('tbody tr a:first').click();
-                        });
-                    }
-                }
-
                 function getTooltip(col){
                     if (col.title){
                         return col.title;
                     }
                     if (col.type === 'bool'){
-                        return 'Filter using yes, no, true, or false'
+                        return 'Filter using yes, no, true, or false';
                     }else if (col.type){
-                        return 'Use a dash (-) to specify a range'
+                        return 'Use a dash (-) to specify a range';
                     }
                 }
 
@@ -709,7 +471,7 @@ angular.module('db-grid', []);
 
                 if($attrs.query !== undefined){
                     $attrs.$observe('query', function (val, old){
-                        if(val != old){
+                        if(val !== old){
                             if (_.isString(val)){
                                 $scope._model.filterText = val;
                             }
@@ -728,10 +490,32 @@ angular.module('db-grid', []);
     }
     dbGrid.$inject = ["$filter", "$timeout", "$q", "$log"];
 
-    angular.module('sds-angular-controls').directive('dbGrid', dbGrid);
+    angular.module('db-grid').directive('dbGrid', dbGrid);
 })();
 
 (function () {
+    'use strict';
+
+    function dbTransclude (){
+        return {
+            restrict: 'EA',
+            link: function($scope, $element, $attrs, controller, $transclude) {
+                $transclude(function(clone, scope) {
+                    $element.empty();
+                    scope.$grid = $scope.$grid;
+                    $element.append(clone);
+                });
+            }
+        };
+    }
+
+    angular.module('db-grid').directive('dbTransclude', dbTransclude);
+})();
+
+(function () {
+    "use strict";
+
+    // Removes the control from the parent angular form.
 
     function isolateControl() {
         return {
@@ -768,13 +552,13 @@ angular.module('db-grid', []);
         };
     }
 
-    angular.module('sds-angular-controls').directive('isolateControl', isolateControl);
+    angular.module('db-grid').directive('isolateControl', isolateControl);
 })();
 angular.module('db-grid').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('db-grid/table-directives/db-grid.html',
-    "<div class=\"table-responsive\"> <div class=\"btn-toolbar\"> <a ng-if=\"_model.showAdvancedFilter\" href=\"\" class=\"btn btn-default\" ng-click=\"_model.clearFilters()\">Clear All Filters <span class=\"big-x\">&times;</span></a> <div ng-if=\"!_model.showAdvancedFilter && _model.filterType !== 'none'\" class=\"toolbar-input\"> <div class=\"form-group has-feedback\"> <input class=\"form-control\" type=\"text\" ng-model=\"_model.filterText\" ng-keyup=\"$grid.refresh()\" placeholder=\"Filter {{_model.label || 'items'}}\" on-enter=\"_model.onEnter()\" isolate-control> <a href=\"\" ng-click=\"_model.filterText = ''; $grid.refresh()\" class=\"form-control-feedback feedback-link\">&times;</a> </div> </div> <a href=\"\" ng-if=\"_model.filterType === 'advanced'\" class=\"btn btn-default\" ng-class=\"{'btn-primary': _model.showAdvancedFilter}\" ng-click=\"_model.showAdvancedFilter = !_model.showAdvancedFilter\">{{_model.showAdvancedFilter ? 'Simple' : 'Advanced'}} Filtering</a> <db-transclude></db-transclude> <p ng-if=\"_model.total && _model.label\"><i>{{_model.total}} {{_model.label}}</i></p> </div> <table class=\"table db-grid table-hover {{_model.layoutCss}}\"> <thead> <tr ng-if=\"_model.showAdvancedFilter\"> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.layoutCss}}\"> <div ng-if=\"::_col.sortable\"> <input type=\"text\" class=\"form-control filter-input\" on-enter=\"_model.onEnter()\" ng-keyup=\"$grid.refresh()\" ng-model=\"_col.filter\" placeholder=\"Filter {{::_col.label || (_col.key | labelCase)}}\" tooltip=\"{{_model.getTooltip(_col)}}\" tooltip-trigger=\"focus\" tooltip-placement=\"top\" isolate-control> </div>   <tr> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.layoutCss}}\"> <a href=\"\" ng-if=\"::_col.sortable\" ng-click=\"_model.toggleSort($index)\">{{::_col.label || (_col.key | labelCase) }}&nbsp;<i class=\"fa\" style=\"display: inline\" ng-class=\"{\n" +
+    "<div class=\"table-responsive\"> <div class=\"btn-toolbar\"> <a ng-if=\"_model.showAdvancedFilter\" href=\"\" class=\"btn btn-default\" ng-click=\"_model.clearFilters()\">Clear All Filters <span class=\"big-x\">&times;</span></a> <div ng-if=\"!_model.showAdvancedFilter && _model.filterType !== 'none'\" class=\"toolbar-input\"> <div class=\"form-group has-feedback\"> <input class=\"form-control\" type=\"text\" ng-model=\"_model.filterText\" ng-keyup=\"$grid.refresh()\" placeholder=\"Filter {{_model.label || 'items'}}\" isolate-control> <a href=\"\" ng-click=\"_model.filterText = ''; $grid.refresh()\" class=\"form-control-feedback feedback-link\">&times;</a> </div> </div> <a href=\"\" ng-if=\"_model.filterType === 'advanced'\" class=\"btn btn-default\" ng-class=\"{'btn-primary': _model.showAdvancedFilter}\" ng-click=\"_model.showAdvancedFilter = !_model.showAdvancedFilter\">{{_model.showAdvancedFilter ? 'Simple' : 'Advanced'}} Filtering</a> <db-transclude></db-transclude> <p ng-if=\"_model.total && _model.label\"><i>{{_model.total}} {{_model.label}}</i></p> </div> <table class=\"table db-grid table-hover {{_model.layoutCss}}\"> <thead> <tr ng-if=\"_model.showAdvancedFilter\"> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.layoutCss}}\"> <div ng-if=\"::_col.sortable\"> <input type=\"text\" class=\"form-control filter-input\" on-enter=\"_model.onEnter()\" ng-keyup=\"$grid.refresh()\" ng-model=\"_col.filter\" placeholder=\"Filter {{::_col.label || (_col.key | labelCase)}}\" tooltip=\"{{_model.getTooltip(_col)}}\" tooltip-trigger=\"focus\" tooltip-placement=\"top\" isolate-control> </div>   <tr> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.layoutCss}}\"> <a href=\"\" ng-if=\"::_col.sortable\" ng-click=\"_model.toggleSort($index)\">{{::_col.label || (_col.key | labelCase) }}&nbsp;<i class=\"fa\" style=\"display: inline\" ng-class=\"{\n" +
     "                         'fa-sort'     : _model.sort !== $index,\n" +
     "                         'fa-sort-down': _model.sort === $index &&  _model.sortAsc,\n" +
     "                         'fa-sort-up'  : _model.sort === $index && !_model.sortAsc\n" +

@@ -3,10 +3,10 @@
     'use strict';
 
     /*
-        An example server side api handler
+        An example server side api handler. Requires Moment
      */
 
-    function dbApiVelocity ($http, $rootScope) {
+    function dbApiVelocity ($http, $rootScope, moment) {
         return{
             restrict: 'E',
             require: '^dbGrid',
@@ -212,5 +212,5 @@
         }
     }
 
-    angular.module('sds-angular-controls').directive('dbApiVelocity', dbApiVelocity);
+    angular.module('db-grid').directive('dbApiVelocity', dbApiVelocity);
 })();

@@ -28,7 +28,7 @@
                     var templateFunc = null;
 
                     if (!templateText && $attrs.key){
-                        templateText = '{{' + dbGrid.rowName + '.' + $attrs.key + '}}'
+                        templateText = '{{' + dbGrid.rowName + '.' + $attrs.key + '}}';
                     }
                     if ($attrs.bind === 'true'){
                         templateFunc = templateText;
@@ -54,7 +54,7 @@
 
                     if($attrs.query !== undefined){
                         $attrs.$observe('query', function (val, old){
-                           if(val != old){
+                           if(val !== old){
                                column.filter = val;
                                dbGrid.refresh();
                            }
@@ -64,10 +64,10 @@
                     $scope.$on('$destroy', function() {
                         dbGrid.removeColumn(column);
                     });
-                }
+                };
             }
-        }
+        };
     }
 
-    angular.module('sds-angular-controls').directive('dbCol', dbCol);
+    angular.module('db-grid').directive('dbCol', dbCol);
 })();
