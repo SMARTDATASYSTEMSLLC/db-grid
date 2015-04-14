@@ -113,7 +113,7 @@ angular.module('db-grid', []);
                         } else if (!col.type) {
                             return (prop(item,col.key) + "").toLowerCase().indexOf(col.filter) > -1;
                         } else if (col.type === 'date') {
-                            var d = moment(prop(item,col.key)).valueOf();
+                            var d = (new Date(prop(item,col.key))).valueOf();
                             return d >= col.filter[0] && d <= col.filter[1];
                         } else if (col.type === 'number') {
                             return prop(item,col.key) >= col.filter[0] && prop(item,col.key) <= col.filter[1];
