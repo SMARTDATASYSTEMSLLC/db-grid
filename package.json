@@ -1,15 +1,19 @@
 {
   "name": "db-grid",
-  "version": "1.0.1",
-  "homepage": "https://github.com/SMARTDATASYSTEMSLLC/sds-angular-controls",
+  "version": "1.0.2",
+  "homepage": "https://github.com/SMARTDATASYSTEMSLLC/db-grid",
+  "main":[
+    "dist/db-grid.js",
+    "dist/db-grid.css"
+  ],
   "authors": [
-    {
-      "name": "Steve Gentile",
-      "email": "steven.gentile@gmail.com"
-    },
     {
       "name": "David Benson",
       "email": "davidbenson86@gmail.com"
+    },
+    {
+      "name": "Steve Gentile",
+      "email": "steven.gentile@gmail.com"
     }
   ],
   "description": "Lightweight angular grid",

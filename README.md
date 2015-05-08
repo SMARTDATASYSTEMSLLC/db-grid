@@ -23,9 +23,9 @@ Example Usage:
    </div>
  </db-col>
     
- <db-col key="age" label="Age" type="number"></db-col>
+ <db-col key="age" type="number"></db-col>
     
- <db-col key="birthday" label="Birthday" type="date">{{cat.birthday | date: 'M/d/yyyy'}}</db-col>
+ <db-col key="birthday" type="date">{{cat.birthday | date: 'M/d/yyyy'}}</db-col>
     
 </db-grid>
 ```

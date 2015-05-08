@@ -1,6 +1,6 @@
 {
   "name": "db-grid",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "homepage": "https://github.com/SMARTDATASYSTEMSLLC/sds-angular-controls",
   "authors": [
     "David Benson  <davidbenson86@gmail.com>",
@@ -9,8 +9,8 @@
   "description": "Angular Directives used with sds-angular generator",
   "license": "MIT",
   "main": [
-    "dist/sds-angular-controls.js",
-    "dist/sds-angular-controls.css"
+    "dist/db-grid.js",
+    "dist/db-grid.css"
   ],
   "keywords": [
     "angular",
