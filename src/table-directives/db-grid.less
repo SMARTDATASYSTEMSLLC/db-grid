@@ -1,74 +1,96 @@
+.db-grid {
+  .btn-toolbar {
+    .big-x {
+      font-size: 20px;
+      line-height: 16px;
+    }
 
-.big-x{
-  font-size: 20px;
-  vertical-align: bottom;
-  line-height: 16px;
-}
+    .toolbar-input {
+      width: 300px;
+      display: inline-block;
+      margin-left: 5px;
+      margin-right: 5px;
+      vertical-align: top;
 
-.btn-toolbar {
+      .has-feedback {
+        position: relative;
+      }
 
-  .toolbar-input {
-    width: 300px;
-    display: inline-block;
-    margin-left: 5px;
-    margin-right: 5px;
-    vertical-align: top;
+      .form-control {
+        display: block;
+        width: 100%;
+        height: 34px;
+        padding: 6px 12px;
+        font-size: 14px;
+      }
+    }
+
+    > db-transclude > div {
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    p {
+      margin-left: 10px;
+      display: inline-block;
+    }
+    .btn {
+      display: inline-block;
+    }
   }
 
-  > db-transclude > div {
-    display: inline-block;
-    vertical-align: top;
+  .db-summary {
+    margin-left: 30px;
   }
 
-  p {
-    margin-left: 10px;
-    display: inline-block;
+  .db-grid.table {
+    thead > tr > th {
+      vertical-align: bottom;
+    }
+    tbody > tr > td {
+      vertical-align: middle;
+    }
   }
-}
 
-.db-summary{
-  margin-left:30px;
-}
+  .form-control.filter-input {
+    height: 28px;
+    padding: 4px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-width: 0;
+    margin-bottom: -8px;
+    background-color: #fff;
+    margin-top: 0;
+    box-sizing: content-box;
+    margin-left: -10px;
+    border-color: transparent;
 
-.db-grid.table {
-  thead>tr>th{
-    vertical-align: bottom;
+    border-radius: 0;
+    box-shadow: inset 0px -1px 1px #d7d7d7 !important;
+    &:focus {
+      border-bottom-width: 4px;
+      margin-bottom: -12px;
+    }
   }
-  tbody > tr > td {
-    vertical-align: middle;
-  }
-}
 
-.form-control.filter-input{
-  height: 28px;
-  padding: 4px 10px;
-  font-size: 12px;
-  line-height: 1.5;
-  border-width: 0;
-  margin-bottom: -8px;
-  background-color: #fff;
-  margin-top: 0px;
-  box-sizing: content-box;
-  margin-left: -10px;
-  border-color:transparent;
-
-  border-radius: 0;
-  box-shadow: inset 0px -1px 1px #d7d7d7 !important;
-  &:focus{
-    border-bottom-width:4px;
-    margin-bottom: -12px;
-  }
-}
-
-
-.form-control-feedback {
-  &.feedback-link {
-    font-size: 20px;
-    pointer-events: auto;
-    font-weight: normal;
-  }
-  &.feedback-link:hover {
-    text-decoration: none;
-    font-weight: bold;
+  .form-control-feedback {
+    &.feedback-link {
+      font-size: 20px;
+      pointer-events: auto;
+      font-weight: normal;
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 2;
+      display: block;
+      width: 34px;
+      height: 34px;
+      line-height: 34px;
+      text-align: center;
+    }
+    &.feedback-link:hover {
+      text-decoration: none;
+      font-weight: bold;
+    }
   }
 }

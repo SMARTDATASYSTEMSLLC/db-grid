@@ -1,42 +1,54 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.0.2 
+ * @version 1.0.3 
  * 
  * Copyright (c) 2015 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
  * @license  MIT 
  */
-.big-x {
+.db-grid .btn-toolbar .big-x {
   font-size: 20px;
-  vertical-align: bottom;
   line-height: 16px;
 }
-.btn-toolbar .toolbar-input {
+.db-grid .btn-toolbar .toolbar-input {
   width: 300px;
   display: inline-block;
   margin-left: 5px;
   margin-right: 5px;
   vertical-align: top;
 }
-.btn-toolbar > db-transclude > div {
+.db-grid .btn-toolbar .toolbar-input .has-feedback {
+  position: relative;
+}
+.db-grid .btn-toolbar .toolbar-input .form-control {
+  display: block;
+  width: 100%;
+  height: 34px;
+  padding: 6px 12px;
+  font-size: 14px;
+}
+.db-grid .btn-toolbar > db-transclude > div {
   display: inline-block;
   vertical-align: top;
 }
-.btn-toolbar p {
+.db-grid .btn-toolbar p {
   margin-left: 10px;
   display: inline-block;
 }
-.db-summary {
+.db-grid .btn-toolbar .btn {
+  display: inline-block;
+}
+.db-grid .db-summary {
   margin-left: 30px;
 }
-.db-grid.table thead > tr > th {
+.db-grid .db-grid.table thead > tr > th {
   vertical-align: bottom;
 }
-.db-grid.table tbody > tr > td {
+.db-grid .db-grid.table tbody > tr > td {
   vertical-align: middle;
 }
-.form-control.filter-input {
+.db-grid .form-control.filter-input {
   height: 28px;
   padding: 4px 10px;
   font-size: 12px;
@@ -44,23 +56,32 @@
   border-width: 0;
   margin-bottom: -8px;
   background-color: #fff;
-  margin-top: 0px;
+  margin-top: 0;
   box-sizing: content-box;
   margin-left: -10px;
   border-color: transparent;
   border-radius: 0;
   box-shadow: inset 0px -1px 1px #d7d7d7 !important;
 }
-.form-control.filter-input:focus {
+.db-grid .form-control.filter-input:focus {
   border-bottom-width: 4px;
   margin-bottom: -12px;
 }
-.form-control-feedback.feedback-link {
+.db-grid .form-control-feedback.feedback-link {
   font-size: 20px;
   pointer-events: auto;
   font-weight: normal;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: block;
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  text-align: center;
 }
-.form-control-feedback.feedback-link:hover {
+.db-grid .form-control-feedback.feedback-link:hover {
   text-decoration: none;
   font-weight: bold;
 }

@@ -55,6 +55,7 @@
                     getItems: defaultGetItems,
                     toggleSort: toggleSort,
                     clearFilters: clearFilters,
+                    getPages: getPages,
                     refresh: _.debounce(refresh, 100),
                     waiting: false
                 };
@@ -113,6 +114,10 @@
                     }else if (col.type){
                         return 'Use a dash (-) to specify a range';
                     }
+                }
+
+                function getPages(){
+                    return _.range(1, ($scope._model.total / $scope._model.pageSize) +1);
                 }
 
                 function resetRefresh(){

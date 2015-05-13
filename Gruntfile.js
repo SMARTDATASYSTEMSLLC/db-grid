@@ -104,7 +104,7 @@ module.exports = function(grunt) {
                                 '/dist',
                                 connect.static('./dist')
                             ),
-                            connect.static('demo')
+                            connect.static('example')
                         ];
                     }
                 }

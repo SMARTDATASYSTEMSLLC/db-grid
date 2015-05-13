@@ -1,4 +1,4 @@
-<div class="table-responsive">
+<div class="table-responsive db-grid">
 
     <div class="btn-toolbar">
         <a ng-if="_model.showAdvancedFilter" href="" class="btn btn-default" ng-click="_model.clearFilters()">Clear All Filters <span class="big-x">&times;</span></a>
@@ -56,7 +56,24 @@
     <div ng-if="_model.filteredItems && _model.filteredItems.length === 0 && _model.label && !_model.waiting" class="db-summary">
         No {{_model.label}}.
     </div>
-    <pagination ng-if="_model.total > _model.pageSize && !_model.waiting" total-items="_model.total" items-per-page="_model.pageSize" max-size="10" rotate="false" ng-model="_model.currentPage" isolate-control></pagination>
+
+    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting" >
+        <li ng-class="{disabled: _model.currentPage <= 1}">
+            <a href="" aria-label="Previous" ng-click="_model.currentPage -= 1">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        <li ng-repeat="page in _model.getPages()" ng-class="{active: page === _model.currentPage}">
+            <a href="" ng-click="_model.currentPage = page">{{page}}</a>
+        </li>
+
+        <li ng-class="{disabled: _model.currentPage >= (_model.total / _model.pageSize)}">
+            <a href="" aria-label="Next"  ng-click="_model.currentPage += 1">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+    </ul>
+
     <div ng-show="_model.waiting">
         <i class="fa fa-circle-o-notch fa-spin"></i> Please Wait...
     </div>
