@@ -1,6 +1,6 @@
 {
   "name": "db-grid",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "homepage": "https://github.com/SMARTDATASYSTEMSLLC/db-grid",
   "main":[
     "dist/db-grid.js",

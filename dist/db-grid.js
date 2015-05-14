@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.0.3 
+ * @version 1.0.4 
  * 
  * Copyright (c) 2015 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -567,7 +567,7 @@ angular.module('db-grid').run(['$templateCache', function($templateCache) {
     "                         'fa-sort'     : _model.sort !== $index,\n" +
     "                         'fa-sort-down': _model.sort === $index &&  _model.sortAsc,\n" +
     "                         'fa-sort-up'  : _model.sort === $index && !_model.sortAsc\n" +
-    "                         }\"></i> </a> <span ng-if=\"::!_col.sortable\"> {{::_col.label || (_col.key | labelCase)}} </span>    <tbody ng-show=\"!_model.waiting\"> <tr> <td ng-repeat=\"_col in _model.cols\" db-bind-cell>   </table> <div ng-if=\"_model.filteredItems && _model.filteredItems.length === 0 && _model.label && !_model.waiting\" class=\"db-summary\"> No {{_model.label}}. </div> <ul class=\"pagination\" ng-if=\"_model.total > _model.pageSize && !_model.waiting\"> <li ng-class=\"{disabled: _model.currentPage <= 1}\"> <a href=\"\" aria-label=\"Previous\" ng-click=\"_model.currentPage -= 1\"> <span aria-hidden=\"true\">&laquo;</span> </a> </li> <li ng-repeat=\"page in _model.getPages()\" ng-class=\"{active: page === _model.currentPage}\"> <a href=\"\" ng-click=\"_model.currentPage = page\">{{page}}</a> </li> <li ng-class=\"{disabled: _model.currentPage >= (_model.total / _model.pageSize)}\"> <a href=\"\" aria-label=\"Next\" ng-click=\"_model.currentPage += 1\"> <span aria-hidden=\"true\">&raquo;</span> </a> </li> </ul> <div ng-show=\"_model.waiting\"> <i class=\"fa fa-circle-o-notch fa-spin\"></i> Please Wait... </div> </div>"
+    "                         }\"></i> </a> <span ng-if=\"::!_col.sortable\"> {{::_col.label || (_col.key | labelCase)}} </span>    <tbody ng-show=\"!_model.waiting\"> <tr> <td ng-repeat=\"_col in _model.cols\" db-bind-cell>   </table> <div ng-if=\"_model.filteredItems && _model.filteredItems.length === 0 && _model.label && !_model.waiting\" class=\"db-summary\"> No {{_model.label}}. </div> <ul class=\"pagination\" ng-if=\"_model.total > _model.pageSize && !_model.waiting\"> <li ng-class=\"{disabled: _model.currentPage <= 1}\"> <a href=\"\" aria-label=\"Previous\" ng-click=\"_model.currentPage = _model.currentPage - 1\"> <span aria-hidden=\"true\">&laquo;</span> </a> </li> <li ng-repeat=\"page in _model.getPages()\" ng-class=\"{active: page === _model.currentPage}\"> <a href=\"\" ng-click=\"_model.currentPage = page\">{{page}}</a> </li> <li ng-class=\"{disabled: _model.currentPage >= (_model.total / _model.pageSize)}\"> <a href=\"\" aria-label=\"Next\" ng-click=\"_model.currentPage = _model.currentPage + 1\"> <span aria-hidden=\"true\">&raquo;</span> </a> </li> </ul> <div ng-show=\"_model.waiting\"> <i class=\"fa fa-circle-o-notch fa-spin\"></i> Please Wait... </div> </div>"
   );
 
 }]);
