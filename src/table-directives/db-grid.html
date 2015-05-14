@@ -59,7 +59,7 @@
 
     <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting" >
         <li ng-class="{disabled: _model.currentPage <= 1}">
-            <a href="" aria-label="Previous" ng-click="_model.currentPage -= 1">
+            <a href="" aria-label="Previous" ng-click="_model.currentPage = _model.currentPage - 1">
                 <span aria-hidden="true">&laquo;</span>
             </a>
         </li>
@@ -68,7 +68,7 @@
         </li>
 
         <li ng-class="{disabled: _model.currentPage >= (_model.total / _model.pageSize)}">
-            <a href="" aria-label="Next"  ng-click="_model.currentPage += 1">
+            <a href="" aria-label="Next"  ng-click="_model.currentPage = _model.currentPage + 1">
                 <span aria-hidden="true">&raquo;</span>
             </a>
         </li>
