@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.0.4 
+ * @version 1.0.5 
  * 
  * Copyright (c) 2015 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -312,6 +312,11 @@ angular.module('db-grid', []);
                 }
 
                 tElement.find('tbody').children().attr('ng-repeat', loop[0] + ' in _model.filteredItems');
+
+                var click = tAttrs.rowClick;
+                if (click){
+                    tElement.find('tbody').children().attr('ng-click', click);
+                }
             },
             controller: ["$scope", "$element", "$attrs", function ($scope, $element, $attrs){
                 var complexFilter = $filter('complexFilter');

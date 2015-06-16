@@ -30,6 +30,11 @@
                 }
 
                 tElement.find('tbody').children().attr('ng-repeat', loop[0] + ' in _model.filteredItems');
+
+                var click = tAttrs.rowClick;
+                if (click){
+                    tElement.find('tbody').children().attr('ng-click', click);
+                }
             },
             controller: function ($scope, $element, $attrs){
                 var complexFilter = $filter('complexFilter');
