@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.0.5 
+ * @version 1.0.6 
  * 
  * Copyright (c) 2015 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -438,6 +438,8 @@ angular.module('db-grid', []);
 
                     if (sort && sort === item.key && $scope._model.sort === null){
                         $scope._model.sort = $scope._model.cols.length;
+                    }else if ($scope._model.sort > item.index){
+                        $scope._model.sort += 1;
                     }
 
                     if (item.filter){
@@ -450,6 +452,10 @@ angular.module('db-grid', []);
                     var index = $scope._model.cols.indexOf(item);
                     if (index > -1) {
                         $scope._model.cols.splice(index, 1);
+
+                        if ($scope._model.sort >= index){
+                            $scope._model.sort -= 1;
+                        }
                     }
                 };
 

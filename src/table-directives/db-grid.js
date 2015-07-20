@@ -156,6 +156,8 @@
 
                     if (sort && sort === item.key && $scope._model.sort === null){
                         $scope._model.sort = $scope._model.cols.length;
+                    }else if ($scope._model.sort > item.index){
+                        $scope._model.sort += 1;
                     }
 
                     if (item.filter){
@@ -168,6 +170,10 @@
                     var index = $scope._model.cols.indexOf(item);
                     if (index > -1) {
                         $scope._model.cols.splice(index, 1);
+
+                        if ($scope._model.sort >= index){
+                            $scope._model.sort -= 1;
+                        }
                     }
                 };
 
