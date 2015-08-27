@@ -23,7 +23,7 @@
         <thead>
             <tr ng-if="_model.showAdvancedFilter">
                 <th ng-repeat="_col in _model.cols" ng-style="{width: _col.width}" class="{{_col.layoutCss}}">
-                    <div ng-if="::_col.sortable">
+                    <div ng-if="::_col.colsortable">
                         <input type="text" class="form-control filter-input" on-enter="_model.onEnter()"
                                ng-keyup="$grid.refresh()" ng-model="_col.filter" placeholder="Filter {{::_col.label || (_col.key | labelCase)}}"
                                tooltip="{{_model.getTooltip(_col)}}"  tooltip-trigger="focus"
@@ -33,7 +33,7 @@
             </tr>
             <tr>
                 <th ng-repeat="_col in _model.cols" ng-style="{width: _col.width}" class="{{_col.layoutCss}}">
-                    <a href="" ng-if="::_col.sortable"
+                    <a href="" ng-if="::_col.colsortable"
                        ng-click="_model.toggleSort($index)">{{::_col.label || (_col.key | labelCase)
                         }}&nbsp;<i class="fa" style="display: inline;" ng-class="{
                          'fa-sort'     : _model.sort !== $index,
@@ -41,7 +41,7 @@
                          'fa-sort-up'  : _model.sort === $index && !_model.sortAsc
                          }"></i>
                     </a>
-                    <span ng-if="::!_col.sortable">
+                    <span ng-if="::!_col.colsortable">
                         {{::_col.label || (_col.key | labelCase)}}
                     </span>
                 </th>

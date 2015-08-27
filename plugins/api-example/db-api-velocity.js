@@ -174,7 +174,7 @@
                     }else if (typeof filter === 'string' && filter){
                         result.logic = 'or';
                         result.filters = _.reduce(cols, function (r, item){
-                            if (item.key && item.sortable && item.type === 'number'){
+                            if (item.key && item.colsortable && item.type === 'number'){
                                 if (isNumeric(filter)) {
                                     r.push({
                                         fieldType: 'decimal',
@@ -183,7 +183,7 @@
                                         field: capitalize(item.key)
                                     });
                                 }
-                            }else if (item.key && item.sortable && item.type === 'date'){
+                            }else if (item.key && item.colsortable && item.type === 'date'){
                                 if (dateRegex.test(filter) && moment(filter).isValid()) {
                                     r.push({
                                         fieldType: 'date',
@@ -192,7 +192,7 @@
                                         field: capitalize(item.key)
                                     });
                                 }
-                            }else if (item.key && item.sortable){
+                            }else if (item.key && item.colsortable){
                                 r.push({
                                     fieldType:'string',
                                     fieldOperator:'contains',
