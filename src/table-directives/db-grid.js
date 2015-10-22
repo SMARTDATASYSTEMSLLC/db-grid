@@ -122,7 +122,15 @@
                 }
 
                 function getPages(){
-                    return _.range(1, ($scope._model.total / $scope._model.pageSize) +1);
+
+                    var pages = [];
+                    for(var i = 1; i <= ($scope._model.total / $scope._model.pageSize) +1; i++){
+                        if (i > $scope._model.currentPage - 5 && i < $scope._model.currentPage + 5){
+                            pages.push(i);
+                        }
+                    }
+
+                    return pages;
                 }
 
                 function resetRefresh(){

@@ -58,20 +58,51 @@
     </div>
 
     <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting" >
-        <li ng-class="{disabled: _model.currentPage <= 1}">
+        <li ng-if="_model.currentPage > 1">
+            <a href="" aria-label="First" ng-click="_model.currentPage = 1">
+                <span aria-hidden="true">First</span>
+            </a>
+        </li>
+        <li class="disabled" ng-if="_model.currentPage <= 1">
+            <a href="" aria-label="First">
+                <span aria-hidden="true">First</span>
+            </a>
+        </li>
+        <li ng-if="_model.currentPage > 1">
             <a href="" aria-label="Previous" ng-click="_model.currentPage = _model.currentPage - 1">
-                <span aria-hidden="true">&laquo;</span>
+                <span aria-hidden="true">&lt;</span>
+            </a>
+        </li>
+        <li class="disabled" ng-if="_model.currentPage <= 1">
+            <a href="" aria-label="Previous">
+                <span aria-hidden="true">&lt;</span>
             </a>
         </li>
         <li ng-repeat="page in _model.getPages()" ng-class="{active: page === _model.currentPage}">
             <a href="" ng-click="_model.currentPage = page">{{page}}</a>
         </li>
 
-        <li ng-class="{disabled: _model.currentPage >= (_model.total / _model.pageSize)}">
+        <li ng-if="_model.currentPage < (_model.total / _model.pageSize)">
             <a href="" aria-label="Next"  ng-click="_model.currentPage = _model.currentPage + 1">
-                <span aria-hidden="true">&raquo;</span>
+                <span aria-hidden="true">&gt;</span>
             </a>
         </li>
+        <li class="disabled" ng-if="_model.currentPage >= (_model.total / _model.pageSize)">
+            <a href="" aria-label="Next" class="disabled">
+                <span aria-hidden="true">&gt;</span>
+            </a>
+        </li>
+        <li ng-if="_model.currentPage < (_model.total / _model.pageSize)">
+            <a href="" aria-label="Last" ng-click="_model.currentPage = 1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize">
+                <span aria-hidden="true">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span>
+            </a>
+        </li>
+        <li class="disabled" ng-if="_model.currentPage >= (_model.total / _model.pageSize)">
+            <a href="" aria-label="Last" class="disabled">
+                <span aria-hidden="true">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span>
+            </a>
+        </li>
+
     </ul>
 
     <div ng-show="_model.waiting">
