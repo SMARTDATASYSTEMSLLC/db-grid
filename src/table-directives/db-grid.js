@@ -66,7 +66,8 @@
                 };
                 $scope.$grid = {
                     refresh: _.debounce(resetRefresh, 100),
-                    items: function (){ return $scope._model.filteredItems; }
+                    items: function (){ return $scope._model.filteredItems; },
+                    noResetRefreshFlag: false
                 };
 
 
@@ -75,7 +76,12 @@
                 this.rowName = loop[0];
                 if (loop[2]) {
                     $scope.$watchCollection(loop.slice(2).join(' '), function (items, old) {
-                        $scope._model.currentPage = 1;
+                        if ($scope.$grid.noResetRefreshFlag) {
+                            $scope.$grid.noResetRefreshFlag = false;
+                        }
+                        else {
+                            $scope._model.currentPage = 1;
+                        }
                         $scope._model.filteredItems = null;
                         $scope._model.items = items;
                         $scope._model.refresh();
@@ -133,13 +139,18 @@
                     return pages;
                 }
 
-                function resetRefresh(){
+                function resetRefresh(resetPage){
+                    if ($scope.$grid.noResetRefreshFlag || resetPage === false) {
+                        $scope.$grid.noResetRefreshFlag = false;
+                    }
+                    else {
                         $scope._model.currentPage = 1;
-                        if($scope._model.isApi) {
+                        if ($scope._model.isApi) {
                             $scope._model.filteredItems = null;
                         }
-                    refresh();
                     }
+                    refresh();
+                }
 
                 function refresh() {
                     //$timeout(function () {
