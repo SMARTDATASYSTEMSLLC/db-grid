@@ -19,12 +19,12 @@
         <p ng-if="_model.total && _model.label"><i>{{_model.total}} {{_model.label}}</i></p>
     </div>
 
-    <table class="table db-grid table-hover {{_model.layoutCss}}">
+    <table class="table db-grid table-hover {{_model.tableClass}}">
         <thead>
             <tr ng-if="_model.showAdvancedFilter">
-                <th ng-repeat="_col in _model.cols" ng-style="{width: _col.width}" class="{{_col.layoutCss}}">
-                    <div ng-if="::_col.colsortable">
-                        <input type="text" class="form-control filter-input" on-enter="_model.onEnter()"
+                <th ng-repeat="_col in _model.cols" ng-style="{width: _col.width}" class="{{_col.colClass}}">
+                    <div ng-if="::_col.canSort">
+                        <input type="text" class="form-control filter-input"
                                ng-keyup="$grid.refresh()" ng-model="_col.filter" placeholder="Filter {{::_col.label || (_col.key | labelCase)}}"
                                tooltip="{{_model.getTooltip(_col)}}"  tooltip-trigger="focus"
                                tooltip-placement="top" isolate-control />
@@ -32,8 +32,8 @@
                 </th>
             </tr>
             <tr>
-                <th ng-repeat="_col in _model.cols" ng-style="{width: _col.width}" class="{{_col.layoutCss}}">
-                    <a href="" ng-if="::_col.colsortable"
+                <th ng-repeat="_col in _model.cols" ng-style="{width: _col.width}" class="{{_col.colClass}}">
+                    <a href="" ng-if="::_col.canSort"
                        ng-click="_model.toggleSort($index)">{{::_col.label || (_col.key | labelCase)
                         }}&nbsp;<i class="fa" style="display: inline;" ng-class="{
                          'fa-sort'     : _model.sort !== $index,
@@ -41,7 +41,7 @@
                          'fa-sort-up'  : _model.sort === $index && !_model.sortAsc
                          }"></i>
                     </a>
-                    <span ng-if="::!_col.colsortable">
+                    <span ng-if="::!_col.canSort">
                         {{::_col.label || (_col.key | labelCase)}}
                     </span>
                 </th>
@@ -59,7 +59,7 @@
 
     <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting" >
         <li ng-if="_model.currentPage > 1">
-            <a href="" aria-label="First" ng-click="_model.currentPage = 1">
+            <a href="" aria-label="First" ng-click="_model.setPage(1)">
                 <span aria-hidden="true">First</span>
             </a>
         </li>
@@ -69,7 +69,7 @@
             </a>
         </li>
         <li ng-if="_model.currentPage > 1">
-            <a href="" aria-label="Previous" ng-click="_model.currentPage = _model.currentPage - 1">
+            <a href="" aria-label="Previous" ng-click="_model.setPage(_model.currentPage - 1)">
                 <span aria-hidden="true">&lt;</span>
             </a>
         </li>
@@ -79,11 +79,11 @@
             </a>
         </li>
         <li ng-repeat="page in _model.getPages()" ng-class="{active: page === _model.currentPage}">
-            <a href="" ng-click="_model.currentPage = page">{{page}}</a>
+            <a href="" ng-click="_model.setPage(page)">{{page}}</a>
         </li>
 
         <li ng-if="_model.currentPage < (_model.total / _model.pageSize)">
-            <a href="" aria-label="Next"  ng-click="_model.currentPage = _model.currentPage + 1">
+            <a href="" aria-label="Next"  ng-click="_model.setPage(_model.currentPage + 1)">
                 <span aria-hidden="true">&gt;</span>
             </a>
         </li>
@@ -93,7 +93,7 @@
             </a>
         </li>
         <li ng-if="_model.currentPage < (_model.total / _model.pageSize)">
-            <a href="" aria-label="Last" ng-click="_model.currentPage = 1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize">
+            <a href="" aria-label="Last" ng-click="_model.setPage(1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize)">
                 <span aria-hidden="true">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span>
             </a>
         </li>

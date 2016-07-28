@@ -16,7 +16,7 @@
 
                 var filters = [];
                 // setup filters
-                _.each(arg, function (col) {
+                angular.forEach(arg, function (col) {
                     if (col.type === 'date' && col.filter) {
                         var d = col.filter.split("-");
                         var d1 = new Date(d[0]);
@@ -54,7 +54,7 @@
                         });
                     }else if (col.type === 'bool' && col.filter){
                         var b = col.filter.toLowerCase();
-                        if (b === 'no'.substr(0, b.length) || b === 'false'.substr(0, b.length)){
+                        if (b === 'no'.substr(0, b.length) || b === 'false'.substr(0, b.length) || b === col.falseFilter.substr(0, b.length)){
                             b = false;
                         }
                         filters.push({
@@ -71,31 +71,31 @@
                 });
 
                 // run query
-                return _.filter(input, function (item) {
-                    return _.all(filters, function (col) {
+                return $filter('filter')(input, function (item) {
+
+                    var index = -1,
+                        length = filters.length;
+
+                    while (++index < length) {
+                        var col = filters[index];
                         if (!col.key) {
-                            return true;
-                        } else if (!col.type && _.isObject(prop(item,col.key))) {
-                            return _.any(prop(item,col.key), function (v){
-                                if (_.isPlainObject(v)){
-                                    return _.any(v, function (vv){
-                                        return (vv + "").toLowerCase().indexOf(col.filter) > -1;
-                                    });
-                                }else{
-                                    return (prop(item,col.key) + "").toLowerCase().indexOf(col.filter) > -1;
-                                }
-                            });
-                        } else if (!col.type) {
-                            return (prop(item,col.key) + "").toLowerCase().indexOf(col.filter) > -1;
+                            continue;
+                        } else if (
+                               (!col.type && angular.isObject(prop(item, col.key)) && col.filter.length >= 2 && JSON.stringify(prop(item, col.key)).toLowerCase().indexOf(col.filter) === -1) ||
+                               (!col.type && (prop(item, col.key) + "").toLowerCase().indexOf(col.filter) === -1) ||
+                               (col.type === 'bool'   && Boolean(prop(item, col.key)) !== col.filter) ||
+                               (col.type === 'number' && (prop(item, col.key) < col.filter[0] || prop(item, col.key) > col.filter[1]))
+                        ){
+                            return false;
                         } else if (col.type === 'date') {
                             var d = (new Date(prop(item,col.key))).valueOf();
-                            return d >= col.filter[0] && d <= col.filter[1];
-                        } else if (col.type === 'number') {
-                            return prop(item,col.key) >= col.filter[0] && prop(item,col.key) <= col.filter[1];
-                        }else if (col.type === 'bool') {
-                            return col.filter ? prop(item,col.key) : !prop(item,col.key);
+                            if (d < col.filter[0] || d > col.filter[1]) {
+                                return false;
+                            }
                         }
-                    });
+
+                    }
+                    return true;
                 });
             }
 

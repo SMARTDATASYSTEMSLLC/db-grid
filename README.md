@@ -53,6 +53,6 @@ label="Cat Name" // A custom label. Defaults to key.
 
 type="date" // 'string', 'number', or 'date'. Used for filtering and sorting. Defaults to 'string'.
 
-colsortable="false" // Whether or not the column is sortable. Defaults to true.
+canSort="false" // Whether or not the column is sortable. Defaults to true.
 
 bind="true" // Whether to use full binding on the column. True will use full binding, false will use once-bound interpolate templates. Defaults to false.

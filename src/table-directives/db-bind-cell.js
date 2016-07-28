@@ -21,8 +21,8 @@
                     $element.data('compiled', compiled);
                 }
 
-                if ($scope._col.layoutCss){
-                  $element.addClass($scope._col.layoutCss);
+                if ($scope._col.colClass){
+                  $element.addClass($scope._col.colClass);
                 }
             }
         };

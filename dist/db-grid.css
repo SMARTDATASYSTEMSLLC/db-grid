@@ -1,12 +1,19 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.0.10 
+ * @version 1.1.0 
  * 
- * Copyright (c) 2015 David Benson, Steve Gentile 
+ * Copyright (c) 2016 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
  * @license  MIT 
  */
+.db-grid .btn-toolbar {
+  margin-left: 0;
+}
+.db-grid .btn-toolbar .btn {
+  float: inherit;
+  margin-bottom: 15px;
+}
 .db-grid .btn-toolbar .big-x {
   font-size: 20px;
   line-height: 16px;

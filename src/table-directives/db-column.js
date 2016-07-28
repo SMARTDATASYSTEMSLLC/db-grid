@@ -12,7 +12,7 @@
      * @param {string} key      - The key to base sorting and filtering on.
      * @param {string} label    - A custom label. Defaults to key name.
      * @param {string} type     - 'string', 'number', or 'date'. Used for filtering and sorting. Defaults to 'string'.
-     * @param {bool}   colsortable - Whether or not the column is sortable. Defaults to true.
+     * @param {bool}   canSort - Whether or not the column is sortable. Defaults to true.
      * @param {bool}   bind     - Whether to use full binding on the column. True will use full binding, false will use
      *                            once-bound interpolate templates. Defaults to false.
      */
@@ -40,10 +40,10 @@
                         index: $element.prevAll('db-col').length,
                         filter: $attrs.query,
                         width: $attrs.width,
-                        layoutCss: $attrs.layoutCss,
+                        colClass: $attrs.colClass,
                         key: $attrs.key,
                         label: $attrs.label,
-                        colsortable:  $attrs.colsortable === 'false' ? false : !!$attrs.key,
+                        canSort:  $attrs.canSort === 'false' ? false : !!$attrs.key,
                         type: $attrs.type,
                         title: $attrs.title,
                         bind: $attrs.bind === 'true',

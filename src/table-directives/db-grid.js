@@ -10,7 +10,7 @@
      * </db-grid>
      *
      * @param {string}     format    - A label to put next to the count (TODO: make this customizable)
-     * @param {string}     layoutCss - A css class to add to the table
+     * @param {string}     tableClass - A css class to add to the table
      * @param {string}     filter    - One of the options 'none', 'simple' or 'advanced'. Defaults to 'advanced'. Bound once.
      * @param {int}        pageSize  - The page size, defaults to 25. Bound once.
      * @param {expression} for       - Required. Either 'item in items' or (when used with a custom data source) just 'item'
@@ -18,7 +18,6 @@
     function dbGrid ($filter, $timeout, $q, $log) {
         return {
             restrict: 'E',
-            replace: true,
             transclude:true,
             scope:true,
             templateUrl: 'db-grid/table-directives/db-grid.html',
@@ -41,10 +40,23 @@
                 var orderByFilter = $filter('orderBy');
                 var pageFilter = $filter('page');
 
+                var debounce = function debounce(func, wait) {
+                    var timeout;
+                    return function() {
+                        var context = this, args = arguments;
+                        var later = function() {
+                            timeout = null;
+                            func.apply(context, args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                };
+
                 $scope._model = {
                     isApi: false,
                     label: $attrs.label,
-                    layoutCss: $attrs.layoutCss,
+                    tableClass: $attrs.tableClass,
                     currentPage: 1,
                     total: 0,
                     sortAsc: $attrs.sort ? $attrs.sort[0] !== '-' : true,
@@ -61,11 +73,12 @@
                     toggleSort: toggleSort,
                     clearFilters: clearFilters,
                     getPages: getPages,
-                    refresh: _.debounce(refresh, 100),
+                    setPage: setPage,
+                    refresh: debounce(refresh, 100),
                     waiting: false
                 };
                 $scope.$grid = {
-                    refresh: _.debounce(resetRefresh, 100),
+                    refresh: debounce(resetRefresh, 100),
                     items: function (){ return $scope._model.filteredItems; },
                     noResetRefreshFlag: false
                 };
@@ -107,10 +120,11 @@
                     }else{
                         $scope._model.sort = index;
                     }
+                    $scope._model.refresh();
                 }
 
                 function clearFilters(){
-                    _.each($scope._model.cols, function (item){
+                    angular.forEach($scope._model.cols, function (item){
                        item.filter = '';
                     });
                     $scope._model.refresh();
@@ -137,6 +151,11 @@
                     }
 
                     return pages;
+                }
+
+                function setPage (page){
+                    $scope._model.currentPage = page;
+                    refresh();
                 }
 
                 function resetRefresh(resetPage){
@@ -175,8 +194,10 @@
 
                     if (sort && sort === item.key && $scope._model.sort === null){
                         $scope._model.sort = $scope._model.cols.length;
+                        $scope._model.refresh();
                     }else if ($scope._model.sort > item.index){
                         $scope._model.sort += 1;
+                        $scope._model.refresh();
                     }
 
                     if (item.filter){
@@ -192,6 +213,7 @@
 
                         if ($scope._model.sort >= index){
                             $scope._model.sort -= 1;
+                            $scope._model.refresh();
                         }
                     }
                 };
@@ -202,8 +224,8 @@
                     $scope._model.isApi = true;
                     $scope._model.refresh.cancel();
                     $scope.$grid.refresh.cancel();
-                    $scope._model.refresh = _.debounce(refresh, 1000);
-                    $scope.$grid.refresh  = _.debounce(resetRefresh, 1000);
+                    $scope._model.refresh = debounce(refresh, 1000);
+                    $scope.$grid.refresh  = debounce(resetRefresh, 1000);
                     refresh();
                     });
                 };
@@ -225,19 +247,13 @@
                 if($attrs.query !== undefined){
                     $attrs.$observe('query', function (val, old){
                         if(val !== old){
-                            if (_.isString(val)){
+                            if (angular.isString(val)){
                                 $scope._model.filterText = val;
                             }
                             $scope._model.refresh();
                         }
                     });
                 }
-
-                $scope.$watch('_model.currentPage', refresh);
-                $scope.$watch('_model.sort',        $scope._model.refresh);
-                $scope.$watch('_model.sortAsc',     $scope._model.refresh);
-
-
             }
         };
     }
