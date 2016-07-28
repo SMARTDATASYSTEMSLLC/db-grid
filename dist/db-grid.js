@@ -479,7 +479,6 @@ angular.module('db-grid', []);
                         $scope._model.refresh();
                     }else if ($scope._model.sort > item.index){
                         $scope._model.sort += 1;
-                        $scope._model.refresh();
                     }
 
                     if (item.filter){
@@ -495,7 +494,9 @@ angular.module('db-grid', []);
 
                         if ($scope._model.sort >= index){
                             $scope._model.sort -= 1;
-                            $scope._model.refresh();
+                            if ($scope._model.sort === -1){
+                                $scope._model.sort = null;
+                            }
                         }
                     }
                 };
