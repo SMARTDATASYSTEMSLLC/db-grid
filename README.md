@@ -38,7 +38,7 @@ for="item" // if using a server side api
 
 label="cats"  // label to use in pagination and filters
 
-layout-css="table-condensed" //A css class to add to the table
+table-class="table-condensed" //A css class to add to the table
 
 filter="none"  // customize the filter availability. One of the options 'none', 'simple' or 'advanced'. Defaults to 'advanced'. Bound once.
 
@@ -51,7 +51,15 @@ key="item.catName" The key to base sorting and filtering on.
 
 label="Cat Name" // A custom label. Defaults to key.
 
-type="date" // 'string', 'number', or 'date'. Used for filtering and sorting. Defaults to 'string'.
+title="Title tooltip"
+
+width="500px"
+
+col-class="column-class"
+
+query="default filter"
+
+type="date" // 'string', 'number', 'date', or 'bool'. Used for filtering and sorting. Defaults to 'string'.
 
 canSort="false" // Whether or not the column is sortable. Defaults to true.
 

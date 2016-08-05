@@ -42,7 +42,7 @@
 
                 var debounce = function debounce(func, wait) {
                     var timeout;
-                    return function() {
+                    var deb = function() {
                         var context = this, args = arguments;
                         var later = function() {
                             timeout = null;
@@ -51,6 +51,10 @@
                         clearTimeout(timeout);
                         timeout = setTimeout(later, wait);
                     };
+                    deb.cancel = function (){
+                        clearTimeout(timeout);
+                    };
+                    return deb;
                 };
 
                 $scope._model = {

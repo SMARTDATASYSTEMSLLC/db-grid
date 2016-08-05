@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.1.0 
+ * @version 1.1.2 
  * 
  * Copyright (c) 2016 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -324,7 +324,7 @@ angular.module('db-grid', []);
 
                 var debounce = function debounce(func, wait) {
                     var timeout;
-                    return function() {
+                    var deb = function() {
                         var context = this, args = arguments;
                         var later = function() {
                             timeout = null;
@@ -333,6 +333,10 @@ angular.module('db-grid', []);
                         clearTimeout(timeout);
                         timeout = setTimeout(later, wait);
                     };
+                    deb.cancel = function (){
+                        clearTimeout(timeout);
+                    };
+                    return deb;
                 };
 
                 $scope._model = {
