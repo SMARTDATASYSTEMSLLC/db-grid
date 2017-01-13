@@ -160,6 +160,6 @@ module.exports = function(grunt) {
     grunt.registerTask('serve', ['default', 'connect', 'watch']);
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'clean', 'ngAnnotate', 'ngtemplates', 'concat', 'uglify', 'less']);
+    grunt.registerTask('default', [ 'clean', 'ngAnnotate', 'ngtemplates', 'concat', 'uglify', 'less']);
 
 };

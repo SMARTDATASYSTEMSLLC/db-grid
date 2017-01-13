@@ -3,7 +3,7 @@
  * Lightweight angular grid
  * @version 1.1.2 
  * 
- * Copyright (c) 2016 David Benson, Steve Gentile 
+ * Copyright (c) 2017 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
  * @license  MIT 
  */ 
@@ -352,6 +352,8 @@ angular.module('db-grid', []);
                     pageSize: $attrs.pageSize ? parseInt($attrs.pageSize, 10) : 25,
                     filterType: ($attrs.filter || 'advanced').toLowerCase(),
                     cols: [],
+                    savePlace: $attrs.savePlace,
+                    placeLoaded: false,
                     items: null,
                     filteredItems: null,
                     getTooltip: getTooltip,
@@ -406,6 +408,7 @@ angular.module('db-grid', []);
                     }else{
                         $scope._model.sort = index;
                     }
+                    saveState();
                     $scope._model.refresh();
                 }
 
@@ -413,6 +416,7 @@ angular.module('db-grid', []);
                     angular.forEach($scope._model.cols, function (item){
                        item.filter = '';
                     });
+                    saveState();
                     $scope._model.refresh();
                 }
 
@@ -441,6 +445,7 @@ angular.module('db-grid', []);
 
                 function setPage (page){
                     $scope._model.currentPage = page;
+                    saveState();
                     refresh();
                 }
 
@@ -459,17 +464,54 @@ angular.module('db-grid', []);
 
                 function refresh() {
                     //$timeout(function () {
+                        if (!$scope._model.placeLoaded  && (($scope._model.items && $scope._model.items.length) || $scope._model.isApi)) {
+                            loadState();
+                            $scope._model.placeLoaded = true;
+                        }
                         $scope._model.getItems(
                             $scope._model.showAdvancedFilter ? $scope._model.cols : $scope._model.filterText,
-                            $scope._model.sort !== null ? $scope._model.cols[$scope._model.sort].key : null,
+                            $scope._model.sort !== null ? ($scope._model.cols[$scope._model.sort] || {}).key : null,
                             $scope._model.sortAsc,
                             $scope._model.currentPage - 1,
                             $scope._model.pageSize,
                             $scope._model.cols
                         ).then(function (result){
                             $scope._model.filteredItems = result;
+
                         });
                     //});
+                }
+
+                function saveState(){
+                    if ($scope._model.savePlace){
+                        window.sessionStorage.setItem('grid', JSON.stringify({
+                            filterText: $scope._model.filterText,
+                            showAdvancedFilter: $scope._model.showAdvancedFilter,
+                            sort: $scope._model.sort,
+                            sortAsc: $scope._model.sortAsc,
+                            currentPage: $scope._model.currentPage,
+                            filters: $scope._model.cols.map(function (v){ return v.filter; })
+                        }));
+                    }
+                }
+
+                function loadState(){
+                    if ($scope._model.savePlace){
+                        var saved = JSON.parse(window.sessionStorage.getItem('grid'));
+                        if (saved && saved.currentPage) {
+                            $scope._model.filterText = saved.filterText;
+                            $scope._model.showAdvancedFilter = saved.showAdvancedFilter;
+                            $scope._model.sort = saved.sort;
+                            $scope._model.sortAsc = saved.sortAsc;
+                            $scope._model.currentPage = saved.currentPage;
+
+                            angular.forEach(saved.filters, function (v, i){
+                                $scope._model.cols[i].filter = v;
+                            });
+                        }
+
+
+                    }
                 }
 
                 this.addColumn = function (item){
@@ -537,6 +579,7 @@ angular.module('db-grid', []);
                             if (angular.isString(val)){
                                 $scope._model.filterText = val;
                             }
+                            saveState();
                             $scope._model.refresh();
                         }
                     });
