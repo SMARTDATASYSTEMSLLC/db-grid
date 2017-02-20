@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.1.2 
+ * @version 1.1.4 
  * 
  * Copyright (c) 2017 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -53,19 +53,19 @@ angular.module('db-grid', []);
                                 type: col.type
                             });
                         }
-                    } else if (col.type === 'number' && col.filter) {
+                    } else if ((col.type === 'number' || col.type === 'int') && col.filter) {
                         var n = col.filter.split("-");
                         if (!n[0] && n[1]) {
-                            console.log(n);
+
                             n.shift();
                             n[0] *= -1;
-                            console.log(n);
+
                         }
                         if (!n[1] && n[2]) {
-                            console.log(n);
+
                             n.splice(1, 1);
                             n[1] *= -1;
-                            console.log(n);
+
                         }
                         if (n[1] === ""){
                             n[1] =  Number.MAX_VALUE;
@@ -75,18 +75,24 @@ angular.module('db-grid', []);
                         filters.push({
                             filter: [n1, n2],
                             key: col.key,
-                            type: col.type
+                            type: 'number'
                         });
-                    }else if (col.type === 'bool' && col.filter){
-                        var b = col.filter.toLowerCase();
-                        if (b === 'no'.substr(0, b.length) || b === 'false'.substr(0, b.length) || b === col.falseFilter.substr(0, b.length)){
-                            b = false;
-                        }
+                    }else if ((col.type === 'boolean' || col.type === 'bool') && col.filter){
+
+                        if (/^(0|(false)|(no)|n|f)$/i.test(col.filter) || /^([1-9]\d*|(true)|(yes)|y|t)$/i.test(col.filter)) {
                         filters.push({
-                            filter: !!b,
+                                filter: /^([1-9]\d*|(true)|(yes)|y|t)$/i.test(col.filter),
                             key: col.key,
-                            type: col.type
+                            type: 'bool'
                         });
+                        }else if (col.trueFilter && col.falseFilter && col.filter.toLowerCase() === col.trueFilter || col.filter.toLowerCase() === col.falseFilter.toLowerCase()){
+                            filters.push({
+                                filter: col.filter.toLowerCase() === col.trueFilter.toLowerCase(),
+                                key: col.key,
+                                type: 'bool'
+                            });
+                        }
+
                     }else if (col.filter && typeof col.filter === 'string'){
                         filters.push({
                             filter:col.filter.toLowerCase(),
@@ -248,6 +254,8 @@ angular.module('db-grid', []);
                         filter: $attrs.query,
                         width: $attrs.width,
                         colClass: $attrs.colClass,
+                        falseFilter: $attrs.falseFilter,
+                        trueFilter: $attrs.trueFilter,
                         key: $attrs.key,
                         label: $attrs.label,
                         canSort:  $attrs.canSort === 'false' ? false : !!$attrs.key,
@@ -262,6 +270,9 @@ angular.module('db-grid', []);
                     if($attrs.query !== undefined){
                         $attrs.$observe('query', function (val, old){
                            if(val !== old){
+                               if (val) {
+                                   dbGrid.setAdvanced(true);
+                               }
                                column.filter = val;
                                dbGrid.refresh();
                            }
@@ -310,11 +321,17 @@ angular.module('db-grid', []);
                     return;
                 }
 
-                tElement.find('tbody').children().attr('ng-repeat', loop[0] + ' in _model.filteredItems');
+                var row = tElement.find('tbody').children();
+                row.attr('ng-repeat', loop[0] + ' in _model.filteredItems');
 
                 var click = tAttrs.rowClick;
                 if (click){
-                    tElement.find('tbody').children().attr('ng-click', click);
+                   row.attr('ng-click', click);
+                }
+
+                var rowCss = tAttrs.rowCss;
+                if (rowCss){
+                    row.attr('ng-class', rowCss);
                 }
             },
             controller: ["$scope", "$element", "$attrs", function ($scope, $element, $attrs){
@@ -343,6 +360,7 @@ angular.module('db-grid', []);
                     isApi: false,
                     label: $attrs.label,
                     tableClass: $attrs.tableClass,
+                    pagingLayout: $attrs.pagingLayout,
                     currentPage: 1,
                     total: 0,
                     sortAsc: $attrs.sort ? $attrs.sort[0] !== '-' : true,
@@ -362,6 +380,7 @@ angular.module('db-grid', []);
                     clearFilters: clearFilters,
                     getPages: getPages,
                     setPage: setPage,
+                    refreshFilter: debounce(refreshFilter, 100),
                     refresh: debounce(refresh, 100),
                     waiting: false
                 };
@@ -424,7 +443,9 @@ angular.module('db-grid', []);
                     if (col.title){
                         return col.title;
                     }
-                    if (col.type === 'bool'){
+                    if (col.type === 'bool'   && col.trueFilter          && col.falseFilter) {
+                        return 'Filter using ' + col.trueFilter + ' and ' + col.falseFilter;
+                    }else if (col.type === 'bool'){
                         return 'Filter using yes, no, true, or false';
                     }else if (col.type){
                         return 'Use a dash (-) to specify a range';
@@ -462,29 +483,32 @@ angular.module('db-grid', []);
                     refresh();
                 }
 
-                function refresh() {
-                    //$timeout(function () {
-                        if (!$scope._model.placeLoaded  && (($scope._model.items && $scope._model.items.length) || $scope._model.isApi)) {
-                            loadState();
-                            $scope._model.placeLoaded = true;
-                        }
-                        $scope._model.getItems(
-                            $scope._model.showAdvancedFilter ? $scope._model.cols : $scope._model.filterText,
-                            $scope._model.sort !== null ? ($scope._model.cols[$scope._model.sort] || {}).key : null,
-                            $scope._model.sortAsc,
-                            $scope._model.currentPage - 1,
-                            $scope._model.pageSize,
-                            $scope._model.cols
-                        ).then(function (result){
-                            $scope._model.filteredItems = result;
+                function refreshFilter(){
+                    saveState();
+                    refresh();
+                }
 
-                        });
-                    //});
+                function refresh() {
+                    if (!$scope._model.placeLoaded  && (($scope._model.items && $scope._model.items.length) || $scope._model.isApi)) {
+                        loadState();
+                        $scope._model.placeLoaded = true;
+                    }
+                    $scope._model.getItems(
+                        $scope._model.showAdvancedFilter ? $scope._model.cols : $scope._model.filterText,
+                        $scope._model.sort !== null ? ($scope._model.cols[$scope._model.sort] || {}).key : null,
+                        $scope._model.sortAsc,
+                        $scope._model.currentPage - 1,
+                        $scope._model.pageSize,
+                        $scope._model.cols
+                    ).then(function (result){
+                        $scope._model.filteredItems = result;
+
+                    });
                 }
 
                 function saveState(){
                     if ($scope._model.savePlace){
-                        window.sessionStorage.setItem('grid', JSON.stringify({
+                        window.sessionStorage.setItem($attrs.id || $attrs.savePlace.toLowerCase() !==  "true" ? $attrs.savePlace : $attrs.for, JSON.stringify({
                             filterText: $scope._model.filterText,
                             showAdvancedFilter: $scope._model.showAdvancedFilter,
                             sort: $scope._model.sort,
@@ -497,7 +521,7 @@ angular.module('db-grid', []);
 
                 function loadState(){
                     if ($scope._model.savePlace){
-                        var saved = JSON.parse(window.sessionStorage.getItem('grid'));
+                        var saved = JSON.parse(window.sessionStorage.getItem($attrs.id || $attrs.savePlace.toLowerCase() !==  "true" ? $attrs.savePlace : $attrs.for));
                         if (saved && saved.currentPage) {
                             $scope._model.filterText = saved.filterText;
                             $scope._model.showAdvancedFilter = saved.showAdvancedFilter;
@@ -509,8 +533,6 @@ angular.module('db-grid', []);
                                 $scope._model.cols[i].filter = v;
                             });
                         }
-
-
                     }
                 }
 
@@ -523,7 +545,7 @@ angular.module('db-grid', []);
                     if (sort && sort === item.key && $scope._model.sort === null){
                         $scope._model.sort = $scope._model.cols.length;
                         $scope._model.refresh();
-                    }else if ($scope._model.sort > item.index){
+                    }else if ($scope._model.sort >= item.index){
                         $scope._model.sort += 1;
                     }
 
@@ -565,6 +587,10 @@ angular.module('db-grid', []);
 
                 this.setWaiting = function (waiting){
                     $scope._model.waiting = waiting;
+                };
+
+                this.setAdvanced = function (advanced){
+                    $scope._model.showAdvancedFilter = advanced;
                 };
 
                 this.refresh = function (force){
@@ -657,11 +683,11 @@ angular.module('db-grid').run(['$templateCache', function($templateCache) {
   'use strict';
 
   $templateCache.put('db-grid/table-directives/db-grid.html',
-    "<div class=\"table-responsive db-grid\"> <div class=\"btn-toolbar\"> <a ng-if=\"_model.showAdvancedFilter\" href=\"\" class=\"btn btn-default\" ng-click=\"_model.clearFilters()\">Clear All Filters <span class=\"big-x\">&times;</span></a> <div ng-if=\"!_model.showAdvancedFilter && _model.filterType !== 'none'\" class=\"toolbar-input\"> <div class=\"form-group has-feedback\"> <input class=\"form-control\" type=\"text\" ng-model=\"_model.filterText\" ng-keyup=\"$grid.refresh()\" placeholder=\"Filter {{_model.label || 'items'}}\" isolate-control> <a href=\"\" ng-click=\"_model.filterText = ''; $grid.refresh()\" class=\"form-control-feedback feedback-link\">&times;</a> </div> </div> <a href=\"\" ng-if=\"_model.filterType === 'advanced'\" class=\"btn btn-default\" ng-class=\"{'btn-primary': _model.showAdvancedFilter}\" ng-click=\"_model.showAdvancedFilter = !_model.showAdvancedFilter\">{{_model.showAdvancedFilter ? 'Simple' : 'Advanced'}} Filtering</a> <db-transclude></db-transclude> <p ng-if=\"_model.total && _model.label\"><i>{{_model.total}} {{_model.label}}</i></p> </div> <table class=\"table db-grid table-hover {{_model.tableClass}}\"> <thead> <tr ng-if=\"_model.showAdvancedFilter\"> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.colClass}}\"> <div ng-if=\"::_col.canSort\"> <input type=\"text\" class=\"form-control filter-input\" ng-keyup=\"$grid.refresh()\" ng-model=\"_col.filter\" placeholder=\"Filter {{::_col.label || (_col.key | labelCase)}}\" tooltip=\"{{_model.getTooltip(_col)}}\" tooltip-trigger=\"focus\" tooltip-placement=\"top\" isolate-control> </div>   <tr> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.colClass}}\"> <a href=\"\" ng-if=\"::_col.canSort\" ng-click=\"_model.toggleSort($index)\">{{::_col.label || (_col.key | labelCase) }}&nbsp;<i class=\"fa\" style=\"display: inline\" ng-class=\"{\n" +
+    "<div class=\"table-responsive db-grid\"> <div class=\"btn-toolbar\"> <a ng-if=\"_model.showAdvancedFilter\" href=\"\" class=\"btn btn-default\" ng-click=\"_model.clearFilters()\">Clear All Filters <span class=\"big-x\">&times;</span></a> <div ng-if=\"!_model.showAdvancedFilter && _model.filterType !== 'none'\" class=\"toolbar-input\"> <div class=\"form-group has-feedback\"> <input class=\"form-control\" type=\"text\" ng-model=\"_model.filterText\" ng-keyup=\"_model.refreshFilter()\" placeholder=\"Filter {{_model.label || 'items'}}\" isolate-control> <a href=\"\" ng-click=\"_model.filterText = ''; $grid.refresh()\" class=\"form-control-feedback feedback-link\">&times;</a> </div> </div> <a href=\"\" ng-if=\"_model.filterType === 'advanced'\" class=\"btn btn-default\" ng-class=\"{'btn-primary': _model.showAdvancedFilter}\" ng-click=\"_model.showAdvancedFilter = !_model.showAdvancedFilter\">{{_model.showAdvancedFilter ? 'Simple' : 'Advanced'}} Filtering</a> <db-transclude></db-transclude> <p ng-if=\"_model.total && _model.label\"><i>{{_model.total}} {{_model.label}}</i></p> </div> <ul class=\"pagination\" ng-if=\"_model.total > _model.pageSize && !_model.waiting && _model.pagingLayout == 'both' || _model.pagingLayout == 'top'\"> <li ng-if=\"_model.currentPage > 1\"> <a href=\"\" aria-label=\"First\" ng-click=\"_model.setPage(1)\"> <span aria-hidden=\"true\">First</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage <= 1\"> <a href=\"\" aria-label=\"First\"> <span aria-hidden=\"true\">First</span> </a> </li> <li ng-if=\"_model.currentPage > 1\"> <a href=\"\" aria-label=\"Previous\" ng-click=\"_model.setPage(_model.currentPage - 1)\"> <span aria-hidden=\"true\">&lt;</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage <= 1\"> <a href=\"\" aria-label=\"Previous\"> <span aria-hidden=\"true\">&lt;</span> </a> </li> <li ng-repeat=\"page in _model.getPages()\" ng-class=\"{active: page === _model.currentPage}\"> <a href=\"\" ng-click=\"_model.setPage(page)\">{{page}}</a> </li> <li ng-if=\"_model.currentPage < (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Next\" ng-click=\"_model.setPage(_model.currentPage + 1)\"> <span aria-hidden=\"true\">&gt;</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage >= (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Next\" class=\"disabled\"> <span aria-hidden=\"true\">&gt;</span> </a> </li> <li ng-if=\"_model.currentPage < (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Last\" ng-click=\"_model.setPage(1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize)\"> <span aria-hidden=\"true\">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage >= (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Last\" class=\"disabled\"> <span aria-hidden=\"true\">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span> </a> </li> </ul> <table class=\"table db-grid table-hover {{_model.tableClass}}\"> <thead> <tr ng-if=\"_model.showAdvancedFilter\"> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.colClass}}\"> <div ng-if=\"::_col.canSort\"> <input type=\"text\" class=\"form-control filter-input\" ng-keyup=\"_model.refreshFilter()\" ng-model=\"_col.filter\" placeholder=\"Filter {{::_col.label || (_col.key | labelCase)}}\" tooltip=\"{{_model.getTooltip(_col)}}\" tooltip-trigger=\"focus\" tooltip-placement=\"top\" isolate-control> </div>   <tr> <th ng-repeat=\"_col in _model.cols\" ng-style=\"{width: _col.width}\" class=\"{{_col.colClass}}\"> <a href=\"\" ng-if=\"::_col.canSort\" ng-click=\"_model.toggleSort($index)\">{{::_col.label || (_col.key | labelCase) }}&nbsp;<i class=\"fa\" style=\"display: inline\" ng-class=\"{\n" +
     "                         'fa-sort'     : _model.sort !== $index,\n" +
     "                         'fa-sort-down': _model.sort === $index &&  _model.sortAsc,\n" +
     "                         'fa-sort-up'  : _model.sort === $index && !_model.sortAsc\n" +
-    "                         }\"></i> </a> <span ng-if=\"::!_col.canSort\"> {{::_col.label || (_col.key | labelCase)}} </span>    <tbody ng-show=\"!_model.waiting\"> <tr> <td ng-repeat=\"_col in _model.cols\" db-bind-cell>   </table> <div ng-if=\"_model.filteredItems && _model.filteredItems.length === 0 && _model.label && !_model.waiting\" class=\"db-summary\"> No {{_model.label}}. </div> <ul class=\"pagination\" ng-if=\"_model.total > _model.pageSize && !_model.waiting\"> <li ng-if=\"_model.currentPage > 1\"> <a href=\"\" aria-label=\"First\" ng-click=\"_model.setPage(1)\"> <span aria-hidden=\"true\">First</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage <= 1\"> <a href=\"\" aria-label=\"First\"> <span aria-hidden=\"true\">First</span> </a> </li> <li ng-if=\"_model.currentPage > 1\"> <a href=\"\" aria-label=\"Previous\" ng-click=\"_model.setPage(_model.currentPage - 1)\"> <span aria-hidden=\"true\">&lt;</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage <= 1\"> <a href=\"\" aria-label=\"Previous\"> <span aria-hidden=\"true\">&lt;</span> </a> </li> <li ng-repeat=\"page in _model.getPages()\" ng-class=\"{active: page === _model.currentPage}\"> <a href=\"\" ng-click=\"_model.setPage(page)\">{{page}}</a> </li> <li ng-if=\"_model.currentPage < (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Next\" ng-click=\"_model.setPage(_model.currentPage + 1)\"> <span aria-hidden=\"true\">&gt;</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage >= (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Next\" class=\"disabled\"> <span aria-hidden=\"true\">&gt;</span> </a> </li> <li ng-if=\"_model.currentPage < (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Last\" ng-click=\"_model.setPage(1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize)\"> <span aria-hidden=\"true\">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage >= (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Last\" class=\"disabled\"> <span aria-hidden=\"true\">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span> </a> </li> </ul> <div ng-show=\"_model.waiting\"> <i class=\"fa fa-circle-o-notch fa-spin\"></i> Please Wait... </div> </div>"
+    "                         }\"></i> </a> <span ng-if=\"::!_col.canSort\"> {{::_col.label || (_col.key | labelCase)}} </span>    <tbody ng-show=\"!_model.waiting\"> <tr> <td ng-repeat=\"_col in _model.cols\" db-bind-cell>   </table> <div ng-if=\"_model.filteredItems && _model.filteredItems.length === 0 && _model.label && !_model.waiting\" class=\"db-summary\"> No {{_model.label}}. </div> <ul class=\"pagination\" ng-if=\"_model.total > _model.pageSize && !_model.waiting && _model.pagingLayout !== 'none' || _model.pagingLayout !== 'top'\"> <li ng-if=\"_model.currentPage > 1\"> <a href=\"\" aria-label=\"First\" ng-click=\"_model.setPage(1)\"> <span aria-hidden=\"true\">First</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage <= 1\"> <a href=\"\" aria-label=\"First\"> <span aria-hidden=\"true\">First</span> </a> </li> <li ng-if=\"_model.currentPage > 1\"> <a href=\"\" aria-label=\"Previous\" ng-click=\"_model.setPage(_model.currentPage - 1)\"> <span aria-hidden=\"true\">&lt;</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage <= 1\"> <a href=\"\" aria-label=\"Previous\"> <span aria-hidden=\"true\">&lt;</span> </a> </li> <li ng-repeat=\"page in _model.getPages()\" ng-class=\"{active: page === _model.currentPage}\"> <a href=\"\" ng-click=\"_model.setPage(page)\">{{page}}</a> </li> <li ng-if=\"_model.currentPage < (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Next\" ng-click=\"_model.setPage(_model.currentPage + 1)\"> <span aria-hidden=\"true\">&gt;</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage >= (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Next\" class=\"disabled\"> <span aria-hidden=\"true\">&gt;</span> </a> </li> <li ng-if=\"_model.currentPage < (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Last\" ng-click=\"_model.setPage(1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize)\"> <span aria-hidden=\"true\">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span> </a> </li> <li class=\"disabled\" ng-if=\"_model.currentPage >= (_model.total / _model.pageSize)\"> <a href=\"\" aria-label=\"Last\" class=\"disabled\"> <span aria-hidden=\"true\">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span> </a> </li> </ul> <div ng-show=\"_model.waiting\"> <i class=\"fa fa-circle-o-notch fa-spin\"></i> Please Wait... </div> </div>"
   );
 
 }]);

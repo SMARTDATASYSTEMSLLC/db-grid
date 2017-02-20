@@ -28,19 +28,19 @@
                                 type: col.type
                             });
                         }
-                    } else if (col.type === 'number' && col.filter) {
+                    } else if ((col.type === 'number' || col.type === 'int') && col.filter) {
                         var n = col.filter.split("-");
                         if (!n[0] && n[1]) {
-                            console.log(n);
+
                             n.shift();
                             n[0] *= -1;
-                            console.log(n);
+
                         }
                         if (!n[1] && n[2]) {
-                            console.log(n);
+
                             n.splice(1, 1);
                             n[1] *= -1;
-                            console.log(n);
+
                         }
                         if (n[1] === ""){
                             n[1] =  Number.MAX_VALUE;
@@ -50,18 +50,24 @@
                         filters.push({
                             filter: [n1, n2],
                             key: col.key,
-                            type: col.type
+                            type: 'number'
                         });
-                    }else if (col.type === 'bool' && col.filter){
-                        var b = col.filter.toLowerCase();
-                        if (b === 'no'.substr(0, b.length) || b === 'false'.substr(0, b.length) || b === col.falseFilter.substr(0, b.length)){
-                            b = false;
-                        }
+                    }else if ((col.type === 'boolean' || col.type === 'bool') && col.filter){
+
+                        if (/^(0|(false)|(no)|n|f)$/i.test(col.filter) || /^([1-9]\d*|(true)|(yes)|y|t)$/i.test(col.filter)) {
                         filters.push({
-                            filter: !!b,
+                                filter: /^([1-9]\d*|(true)|(yes)|y|t)$/i.test(col.filter),
                             key: col.key,
-                            type: col.type
+                            type: 'bool'
                         });
+                        }else if (col.trueFilter && col.falseFilter && col.filter.toLowerCase() === col.trueFilter || col.filter.toLowerCase() === col.falseFilter.toLowerCase()){
+                            filters.push({
+                                filter: col.filter.toLowerCase() === col.trueFilter.toLowerCase(),
+                                key: col.key,
+                                type: 'bool'
+                            });
+                        }
+
                     }else if (col.filter && typeof col.filter === 'string'){
                         filters.push({
                             filter:col.filter.toLowerCase(),

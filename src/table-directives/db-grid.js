@@ -28,11 +28,17 @@
                     return;
                 }
 
-                tElement.find('tbody').children().attr('ng-repeat', loop[0] + ' in _model.filteredItems');
+                var row = tElement.find('tbody').children();
+                row.attr('ng-repeat', loop[0] + ' in _model.filteredItems');
 
                 var click = tAttrs.rowClick;
                 if (click){
-                    tElement.find('tbody').children().attr('ng-click', click);
+                   row.attr('ng-click', click);
+                }
+
+                var rowCss = tAttrs.rowCss;
+                if (rowCss){
+                    row.attr('ng-class', rowCss);
                 }
             },
             controller: function ($scope, $element, $attrs){
@@ -61,6 +67,7 @@
                     isApi: false,
                     label: $attrs.label,
                     tableClass: $attrs.tableClass,
+                    pagingLayout: $attrs.pagingLayout,
                     currentPage: 1,
                     total: 0,
                     sortAsc: $attrs.sort ? $attrs.sort[0] !== '-' : true,
@@ -80,6 +87,7 @@
                     clearFilters: clearFilters,
                     getPages: getPages,
                     setPage: setPage,
+                    refreshFilter: debounce(refreshFilter, 100),
                     refresh: debounce(refresh, 100),
                     waiting: false
                 };
@@ -142,7 +150,9 @@
                     if (col.title){
                         return col.title;
                     }
-                    if (col.type === 'bool'){
+                    if (col.type === 'bool'   && col.trueFilter          && col.falseFilter) {
+                        return 'Filter using ' + col.trueFilter + ' and ' + col.falseFilter;
+                    }else if (col.type === 'bool'){
                         return 'Filter using yes, no, true, or false';
                     }else if (col.type){
                         return 'Use a dash (-) to specify a range';
@@ -180,29 +190,32 @@
                     refresh();
                 }
 
-                function refresh() {
-                    //$timeout(function () {
-                        if (!$scope._model.placeLoaded  && (($scope._model.items && $scope._model.items.length) || $scope._model.isApi)) {
-                            loadState();
-                            $scope._model.placeLoaded = true;
-                        }
-                        $scope._model.getItems(
-                            $scope._model.showAdvancedFilter ? $scope._model.cols : $scope._model.filterText,
-                            $scope._model.sort !== null ? ($scope._model.cols[$scope._model.sort] || {}).key : null,
-                            $scope._model.sortAsc,
-                            $scope._model.currentPage - 1,
-                            $scope._model.pageSize,
-                            $scope._model.cols
-                        ).then(function (result){
-                            $scope._model.filteredItems = result;
+                function refreshFilter(){
+                    saveState();
+                    refresh();
+                }
 
-                        });
-                    //});
+                function refresh() {
+                    if (!$scope._model.placeLoaded  && (($scope._model.items && $scope._model.items.length) || $scope._model.isApi)) {
+                        loadState();
+                        $scope._model.placeLoaded = true;
+                    }
+                    $scope._model.getItems(
+                        $scope._model.showAdvancedFilter ? $scope._model.cols : $scope._model.filterText,
+                        $scope._model.sort !== null ? ($scope._model.cols[$scope._model.sort] || {}).key : null,
+                        $scope._model.sortAsc,
+                        $scope._model.currentPage - 1,
+                        $scope._model.pageSize,
+                        $scope._model.cols
+                    ).then(function (result){
+                        $scope._model.filteredItems = result;
+
+                    });
                 }
 
                 function saveState(){
                     if ($scope._model.savePlace){
-                        window.sessionStorage.setItem('grid', JSON.stringify({
+                        window.sessionStorage.setItem($attrs.id || $attrs.savePlace.toLowerCase() !==  "true" ? $attrs.savePlace : $attrs.for, JSON.stringify({
                             filterText: $scope._model.filterText,
                             showAdvancedFilter: $scope._model.showAdvancedFilter,
                             sort: $scope._model.sort,
@@ -215,7 +228,7 @@
 
                 function loadState(){
                     if ($scope._model.savePlace){
-                        var saved = JSON.parse(window.sessionStorage.getItem('grid'));
+                        var saved = JSON.parse(window.sessionStorage.getItem($attrs.id || $attrs.savePlace.toLowerCase() !==  "true" ? $attrs.savePlace : $attrs.for));
                         if (saved && saved.currentPage) {
                             $scope._model.filterText = saved.filterText;
                             $scope._model.showAdvancedFilter = saved.showAdvancedFilter;
@@ -227,8 +240,6 @@
                                 $scope._model.cols[i].filter = v;
                             });
                         }
-
-
                     }
                 }
 
@@ -241,7 +252,7 @@
                     if (sort && sort === item.key && $scope._model.sort === null){
                         $scope._model.sort = $scope._model.cols.length;
                         $scope._model.refresh();
-                    }else if ($scope._model.sort > item.index){
+                    }else if ($scope._model.sort >= item.index){
                         $scope._model.sort += 1;
                     }
 
@@ -283,6 +294,10 @@
 
                 this.setWaiting = function (waiting){
                     $scope._model.waiting = waiting;
+                };
+
+                this.setAdvanced = function (advanced){
+                    $scope._model.showAdvancedFilter = advanced;
                 };
 
                 this.refresh = function (force){
