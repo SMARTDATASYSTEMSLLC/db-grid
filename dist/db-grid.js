@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.1.4 
+ * @version 1.1.5 
  * 
  * Copyright (c) 2017 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -648,8 +648,8 @@ angular.module('db-grid', []);
             require: ['ngModel', '^?form'],
             link: function (scope, elm, attrs, ctrls) {
                 // Do a copy of the controller
-                var ctrlCopy = {};
-                angular.copy(ctrls[0], ctrlCopy);
+                //var ctrlCopy = {};
+                //angular.copy(ctrls[0], ctrlCopy);
 
                 if (ctrls[1]) {
                     ctrls[1].$removeControl(ctrls[0]);
@@ -679,6 +679,7 @@ angular.module('db-grid', []);
 
     angular.module('db-grid').directive('isolateControl', isolateControl);
 })();
+
 angular.module('db-grid').run(['$templateCache', function($templateCache) {
   'use strict';
 
