@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.1.5 
+ * @version 1.1.6 
  * 
  * Copyright (c) 2017 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -484,6 +484,7 @@ angular.module('db-grid', []);
                 }
 
                 function refreshFilter(){
+                    $scope._model.currentPage = 1;
                     saveState();
                     refresh();
                 }

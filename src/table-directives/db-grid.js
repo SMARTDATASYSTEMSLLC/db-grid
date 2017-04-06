@@ -191,6 +191,7 @@
                 }
 
                 function refreshFilter(){
+                    $scope._model.currentPage = 1;
                     saveState();
                     refresh();
                 }
