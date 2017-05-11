@@ -67,7 +67,7 @@
                     isApi: false,
                     label: $attrs.label,
                     tableClass: $attrs.tableClass,
-                    pagingLayout: $attrs.pagingLayout,
+                    pagingLayout: $attrs.pagingLayout || 'bottom',
                     currentPage: 1,
                     total: 0,
                     sortAsc: $attrs.sort ? $attrs.sort[0] !== '-' : true,
