@@ -19,7 +19,7 @@
         <p ng-if="_model.total && _model.label"><i>{{_model.total}} {{_model.label}}</i></p>
     </div>
 
-    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && _model.pagingLayout == 'both' || _model.pagingLayout == 'top'" >
+    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && (_model.pagingLayout == 'both' || _model.pagingLayout == 'top')" >
         <li ng-if="_model.currentPage > 1">
             <a href="" aria-label="First" ng-click="_model.setPage(1)">
                 <span aria-hidden="true">First</span>
@@ -105,7 +105,7 @@
         No {{_model.label}}.
     </div>
 
-    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && _model.pagingLayout !== 'none' || _model.pagingLayout !== 'top'" >
+    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && (_model.pagingLayout !== 'none' || _model.pagingLayout !== 'top')" >
         <li ng-if="_model.currentPage > 1">
             <a href="" aria-label="First" ng-click="_model.setPage(1)">
                 <span aria-hidden="true">First</span>

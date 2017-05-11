@@ -44,6 +44,8 @@ filter="none"  // customize the filter availability. One of the options 'none', 
 
 pageSize="25"  //The page size, defaults to 25. Bound once.
 
+paging-layout= "bottom" || "top" || "both" || "none"  // customize pagination control location. Defaults to 'bottom'
+
 db-col options
 -------------------
 
