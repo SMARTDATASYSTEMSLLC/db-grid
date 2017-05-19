@@ -253,7 +253,7 @@
                     if (sort && sort === item.key && $scope._model.sort === null){
                         $scope._model.sort = $scope._model.cols.length;
                         $scope._model.refresh();
-                    }else if ($scope._model.sort >= item.index){
+                    }else if ( $scope._model.sort !== null && $scope._model.sort >= item.index){
                         $scope._model.sort += 1;
                     }
 
