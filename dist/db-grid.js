@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.1.8 
+ * @version 1.1.9 
  * 
  * Copyright (c) 2017 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -602,11 +602,12 @@ angular.module('db-grid', []);
 
                 if($attrs.query !== undefined){
                     $attrs.$observe('query', function (val, old){
-                        if(val !== old){
+                        if(val && val !== old){
                             if (angular.isString(val)){
                                 $scope._model.filterText = val;
                             }
-                            saveState();
+                            $scope._model.placeLoaded = true;
+                            //saveState();
                             $scope._model.refresh();
                         }
                     });
