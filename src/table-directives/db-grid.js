@@ -309,11 +309,12 @@
 
                 if($attrs.query !== undefined){
                     $attrs.$observe('query', function (val, old){
-                        if(val !== old){
+                        if(val && val !== old){
                             if (angular.isString(val)){
                                 $scope._model.filterText = val;
                             }
-                            saveState();
+                            $scope._model.placeLoaded = true;
+                            //saveState();
                             $scope._model.refresh();
                         }
                     });
