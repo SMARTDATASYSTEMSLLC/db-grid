@@ -1,7 +1,7 @@
 /*! 
  * db-grid
  * Lightweight angular grid
- * @version 1.1.10 
+ * @version 1.1.11 
  * 
  * Copyright (c) 2017 David Benson, Steve Gentile 
  * @link https://github.com/SMARTDATASYSTEMSLLC/db-grid 
@@ -285,8 +285,8 @@ angular.module('db-grid', []);
                         filter: $attrs.query,
                         width: $attrs.width,
                         colClass: $attrs.colClass,
-                        falseFilter: $attrs.falseFilter,
-                        trueFilter: $attrs.trueFilter,
+                        falseFilter: $attrs.falseFilter || '',
+                        trueFilter: $attrs.trueFilter || '',
                         key: $attrs.key,
                         label: $attrs.label,
                         canSort:  $attrs.canSort === 'false' ? false : !!$attrs.key,
