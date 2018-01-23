@@ -1,0 +1,12 @@
+<a ng-if="_model.showAdvancedFilter" href="" class="btn btn-default" ng-click="_model.clearFilters()">Clear All Filters <span class="big-x">&times;</span></a>
+
+<div ng-if="!_model.showAdvancedFilter && _model.filterType !== 'none'" class="toolbar-input">
+    <div class="form-group has-feedback">
+        <input class="form-control" type="text" ng-model="_model.filterText" ng-keyup="_model.refreshFilter()"
+               placeholder="Filter {{_model.label || 'items'}}" isolate-control />
+        <a href="" ng-click="_model.filterText = ''; $grid.refresh()" class="form-control-feedback feedback-link">&times;</a>
+    </div>
+</div>
+
+<a href="" ng-if="_model.filterType === 'advanced'" class="btn btn-default" ng-class="{'btn-primary': _model.showAdvancedFilter}"
+   ng-click="_model.showAdvancedFilter = !_model.showAdvancedFilter">{{_model.showAdvancedFilter ? 'Simple' : 'Advanced'}} Filtering</a>

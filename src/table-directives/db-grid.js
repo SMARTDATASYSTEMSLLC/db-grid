@@ -65,6 +65,7 @@
 
                 $scope._model = {
                     isApi: false,
+                    toolbarHtml: $attrs.toolbarHtml || 'db-grid/table-directives/db-grid-toolbar.html',
                     label: $attrs.label,
                     tableClass: $attrs.tableClass,
                     pagingLayout: $attrs.pagingLayout || 'bottom',
