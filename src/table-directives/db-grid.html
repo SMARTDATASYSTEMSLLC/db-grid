@@ -6,7 +6,7 @@
         <p ng-if="_model.total && _model.label"><i>{{_model.total}} {{_model.label}}</i></p>
     </div>
 
-    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && (_model.pagingLayout === 'both' || _model.pagingLayout === 'top')" >
+    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && (_model.pagingLayout === 'both' || _model.pagingLayout === 'top') && !_model.showAllValue" >
         <li ng-if="_model.currentPage > 1">
             <a href="" aria-label="First" ng-click="_model.setPage(1)">
                 <span aria-hidden="true">First</span>
@@ -49,6 +49,11 @@
         <li class="disabled" ng-if="_model.currentPage >= (_model.total / _model.pageSize)">
             <a href="" aria-label="Last" class="disabled">
                 <span aria-hidden="true">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span>
+            </a>
+        </li>
+        <li ng-if="_model.showAll">
+            <a href="" aria-label="Show All" ng-click="_model.setShowAll(true)">
+                <span aria-hidden="true">Show All</span>
             </a>
         </li>
 
@@ -92,7 +97,12 @@
         No {{_model.label}}.
     </div>
 
-    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && (_model.pagingLayout === 'both' || _model.pagingLayout === 'bottom')" >
+    <div ng-if="_model.total > _model.pageSize && !_model.waiting && _model.isApi && _model.showAllValue">
+        There are more rows then what can be handled by the browser, so we are showing the first 5k.
+        <a href="" ng-click="_model.setShowAll(false)">Re-enable paging</a>
+    </div>
+
+    <ul class="pagination" ng-if="_model.total > _model.pageSize && !_model.waiting && (_model.pagingLayout === 'both' || _model.pagingLayout === 'bottom') && !_model.showAllValue" >
         <li ng-if="_model.currentPage > 1">
             <a href="" aria-label="First" ng-click="_model.setPage(1)">
                 <span aria-hidden="true">First</span>
@@ -135,6 +145,12 @@
         <li class="disabled" ng-if="_model.currentPage >= (_model.total / _model.pageSize)">
             <a href="" aria-label="Last" class="disabled">
                 <span aria-hidden="true">Last ({{1 + (_model.total - (_model.total % _model.pageSize)) / _model.pageSize}})</span>
+            </a>
+        </li>
+
+        <li ng-if="_model.showAll">
+            <a href="" aria-label="Show All" ng-click="_model.setShowAll(true)">
+                <span aria-hidden="true">Show All</span>
             </a>
         </li>
 

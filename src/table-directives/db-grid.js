@@ -81,6 +81,8 @@
                     savePlace: $attrs.savePlace,
                     placeLoaded: false,
                     items: null,
+                    showAll: $attrs.showAll,
+                    showAllValue: false,
                     filteredItems: null,
                     getTooltip: getTooltip,
                     getItems: defaultGetItems,
@@ -88,6 +90,7 @@
                     clearFilters: clearFilters,
                     getPages: getPages,
                     setPage: setPage,
+                    setShowAll: setShowAll,
                     refreshFilter: debounce(refreshFilter, 100),
                     refresh: debounce(refresh, 100),
                     waiting: false
@@ -123,7 +126,11 @@
                             items = orderByFilter(items, sortKey, !sortAsc);
                         }
                         $scope._model.total = items ? items.length : 0;
-                        return $q.when(pageFilter(items, page, pageSize));
+                        if ($scope._model.showAllValue){
+                          return $q.when(items);
+                        }else {
+                          return $q.when(pageFilter(items, page, pageSize));
+                        }
                     }else{
                         return $q.when(null);
                     }
@@ -244,6 +251,17 @@
                         }
                     }
                 }
+
+              function setShowAll (val){
+                $scope._model.showAllValue = val;
+                $scope._model.currentPage = 1;
+                if (val){
+                  $scope._model.pageSize = 5000;
+                }else{
+                  $scope._model.pageSize = $attrs.pageSize ? parseInt($attrs.pageSize, 10) : 25;
+                }
+                refresh();
+              }
 
                 this.addColumn = function (item){
                     var sort = $attrs.sort || '';
